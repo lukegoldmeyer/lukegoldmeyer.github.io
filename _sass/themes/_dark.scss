@@ -2,9 +2,9 @@
   color-scheme: dark;
 
   /* Framework color */
-  --main-bg: rgb(27 27 30);
+  --main-bg: #1e1e1e; /* ChatGPT Main Dark Gray */
   --mask-bg: rgb(68 69 70);
-  --main-border-color: rgb(44 45 45);
+  --main-border-color: #2d2d2d;
 
   /* Common color */
   --text-color: rgb(175 176 177);
@@ -16,7 +16,7 @@
   --blockquote-text-color: #868686;
   --link-color: rgb(138 180 248);
   --link-underline-color: rgb(82 108 150);
-  --button-bg: #1e1e1e;
+  --button-bg: #3a3a3a; /* Lighter button */
   --btn-border-color: #2e2f31;
   --btn-backtotop-color: var(--text-color);
   --btn-backtotop-border-color: #212122;
@@ -34,7 +34,7 @@
   /* Sidebar */
   --site-title-color: #717070;
   --site-subtitle-color: #868686;
-  --sidebar-bg: #1e1e1e;
+  --sidebar-bg: #171717; /* Darker than main content */
   --sidebar-border-color: #292929;
   --sidebar-muted-color: #868686;
   --sidebar-active-color: rgb(255 255 255 / 95%);
@@ -44,7 +44,7 @@
   --avatar-border-color: rgb(206 206 206 / 90%);
 
   /* Topbar */
-  --topbar-bg: rgb(27 27 30 / 64%);
+  --topbar-bg: rgb(30 30 30 / 64%); /* Matched to new gray */
   --topbar-text-color: var(--text-color);
   --search-border-color: rgb(55 55 55);
   --search-icon-color: rgb(100 102 105);
@@ -65,8 +65,8 @@
   --footnote-target-bg: rgb(63 81 181);
   --btn-share-color: #6c757d;
   --btn-share-hover-color: #bfc1ca;
-  --card-bg: #1e1e1e;
-  --card-hover-bg: #464d51;
+  --card-bg: #2d2d2d; /* Lighter cards */
+  --card-hover-bg: #363636;
   --card-shadow: rgb(21 21 21 / 72%) 0 6px 18px 0,
     rgb(137 135 135 / 24%) 0 0 0 1px;
   --kbd-wrap-color: #6a6a6a;
@@ -100,7 +100,7 @@
 
   /* Code highlight colors */
   --language-border-color: #2d2d2d;
-  --highlight-bg-color: #151515;
+  --highlight-bg-color: #121212; /* Deep black for code contrast */
   --highlighter-rouge-color: #c9def1;
   --highlight-lineno-color: #808080;
   --inline-code-bg: rgb(255 255 255 / 5%);
@@ -171,7 +171,7 @@
   .highlight,
   .highlight .w {
     color: #d0d0d0;
-    background-color: #151515;
+    background-color: var(--highlight-bg-color);
   }
 
   .highlight .err {
