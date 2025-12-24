@@ -3,3 +3,29 @@
 @forward 'layout';
 @forward 'pages';
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* --- CHATGPT STYLE OVERRIDES --- */
+
+/* 1. Round Everything */
+.btn, 
+.post-preview, 
+.card, 
+img, 
+.categories, 
+.tags, 
+input, 
+textarea, 
+.search-result,
+.popup {
+  border-radius: 12px !important;
+}
+
+/* 2. Round the Sidebar Avatar */
+#avatar {
+  border-radius: 12px !important;
+}
+
+/* 3. Round the Code Blocks */
+div[class^='language-'] {
+  border-radius: 12px;
+}

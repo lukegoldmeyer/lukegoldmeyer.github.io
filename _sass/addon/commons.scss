@@ -1,0 +1,19 @@
+/* _sass/addon/commons.scss */
+
+/* 1. IMPORT FONT */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+
+/* 2. APPLY FONT */
+:root, body, h1, h2, h3, h4, h5, h6 {
+  font-family: 'Space Grotesk', sans-serif !important;
+}
+
+/* 3. ROUNDED UI */
+.btn, .post-preview, .card, img, input, .search-result {
+  border-radius: 12px !important;
+}
+
+/* Force Sidebar to be on top of everything */
+#sidebar {
+  z-index: 1050 !important; /* Standard Bootstrap high z-index */
+}

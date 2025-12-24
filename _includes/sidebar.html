@@ -10,7 +10,9 @@
       {%- endif -%}
     </a>
 
-    <a class="site-title d-block" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <a class="site-title d-block" href="{{ '/' | relative_url }}">
+  {{ site.title | replace: ' ', '<br>' }}
+</a>
     <p class="site-subtitle fst-italic mb-0">{{ site.tagline }}</p>
   </header>
   <nav class="flex-column flex-grow-1 w-100 ps-0">
