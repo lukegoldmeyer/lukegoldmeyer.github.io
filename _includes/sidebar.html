@@ -1,7 +1,7 @@
 <aside aria-label="Sidebar" id="sidebar" class="d-flex flex-column align-items-end">
   <header class="profile-wrapper">
     
-    <a href="{{ '/' | relative_url }}" id="avatar" class="rounded-circle" style="width: 0; height: 0; overflow: hidden; display: block; margin: 0; opacity: 0;">
+    <a href="{{ '/' | relative_url }}" id="avatar" class="rounded-circle" style="position: absolute; left: -9999px; top: 0; width: 100px; height: 100px; opacity: 0; pointer-events: none; z-index: -10;">
       {%- if site.avatar != empty and site.avatar -%}
         {%- capture avatar_url -%}
           {% include media-url.html src=site.avatar %}

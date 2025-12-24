@@ -53,25 +53,19 @@ $sidebar-display: 'sidebar-display'; /* the attribute for sidebar display */
     @extend %sidebar-links;
   }
 
-  /* --- RESTORED (BUT HIDDEN) AVATAR BLOCK --- */
-  /* This block must exist for the Theme Toggle JS to work */
+  /* AVATAR RESET: 
+     We let the HTML inline-styles handle the hiding (left: -9999px).
+     We just ensure no standard CSS overrides it to make it visible.
+  */
   #avatar {
+    /* Leave empty or basic properties only */
     display: block;
-    width: 0; 
-    height: 0;
-    overflow: hidden;
-    margin: 0;
-    opacity: 0;
+    border: none;
     box-shadow: none;
-    transform: translateZ(0); 
-
-    img {
-      display: none; /* Ensure image is not rendered */
-    }
   }
 
   .profile-wrapper {
-    /* Adjusted margins to move title up */
+    /* Pull the title up to the top */
     margin-top: 0.5rem; 
     margin-bottom: 2rem;
     
@@ -91,6 +85,7 @@ $sidebar-display: 'sidebar-display'; /* the attribute for sidebar display */
       padding-left: 3.5rem;
     }
   }
+
 
   .site-title {
     @extend %clickable-transition;
