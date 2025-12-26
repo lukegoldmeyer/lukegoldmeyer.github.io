@@ -66,12 +66,10 @@ main() {
   # - Search template uses {url} placeholder replaced by JavaScript
   bundle exec htmlproofer "$SITE_DIR" \
     --disable-external \
-    --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,/^lukegoldmeyer\.github\.io/,/^\/categories\/$/,/^\/tags\/$/" \
+    --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,/^lukegoldmeyer\.github\.io/,/^\/categories\/$/,/^\/tags\/$/,/^\/$/,/^\/404\.html$/,/^\/about\/$/,/^\/portfolio\/$/,/^\/projects\/$/,/^\/posts\/.*\/$/,/^\/categories\/.*\/$/,/^\/tags\/.*\/$/,/^\{url\}/" \
     --ignore-missing-alt \
     --allow-hash-href \
-    --only-4xx \
-    --url-ignore "/^\/$/,/^\/404\.html$/,/^\/categories\/$/,/^\/tags\/$/,/^\/about\/$/,/^\/portfolio\/$/,/^\/projects\/$/,/^\/posts\/.*\/$/,/^\/categories\/.*\/$/,/^\/tags\/.*\/$/,/^\{url\}/" \
-    --file-ignore "/search-results\.html/"
+    --only-4xx
 }
 
 while (($#)); do
