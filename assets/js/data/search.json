@@ -12,6 +12,25 @@ swcache: true
     "tags": {{ post.tags | join: ', ' | jsonify }},
     "date": {{ post.date | jsonify }},
     {% capture content -%}{% include post-summary.html full_text=true %}{%- endcapture -%}
+    {%- comment -%} Collect all image alt text {%- endcomment -%}
+    {%- assign alt_texts = '' | split: '' -%}
+    {%- if post.image.alt -%}
+      {%- assign alt_texts = alt_texts | push: post.image.alt -%}
+    {%- endif -%}
+    {%- if post.thumbnail_image.alt -%}
+      {%- assign alt_texts = alt_texts | push: post.thumbnail_image.alt -%}
+    {%- endif -%}
+    {%- if post.gallery_images -%}
+      {%- for gallery_image in post.gallery_images -%}
+        {%- if gallery_image.alt -%}
+          {%- assign alt_texts = alt_texts | push: gallery_image.alt -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+    {%- if alt_texts.size > 0 -%}
+      {%- assign alt_text_string = alt_texts | join: ' ' -%}
+      {%- assign content = content | append: ' ' | append: alt_text_string -%}
+    {%- endif -%}
     "content": {{ content | jsonify }}
   }{% unless forloop.last %},{% endunless %}
   {% endfor %}

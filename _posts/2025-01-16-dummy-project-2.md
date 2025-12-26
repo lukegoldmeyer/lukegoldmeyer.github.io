@@ -3,7 +3,7 @@ title: "Dummy Project 2"
 date: 2025-01-16 12:00:00 -0600
 categories: [Project]
 tags: [Electronics, 3D Printing, Arduino]
-image:
+thumbnail_image:
   path: /assets/img/testimagelandscape.jpg
   alt: Dummy Project 2 Preview
 excerpt: This is the second dummy project post for testing purposes.

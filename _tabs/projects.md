@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Projects
-icon: fas fa-code
+icon: fas fa-wrench
 order: 2
 ---
 

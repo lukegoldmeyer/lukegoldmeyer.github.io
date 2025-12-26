@@ -13,9 +13,17 @@
   border-radius: 12px !important;
 }
 
-/* Images - rounded but not all (portfolio grid stays sharp) */
-img:not(.portfolio-image):not(.insta-item img) {
-  border-radius: 12px !important;
+/* Images - NO rounded corners sitewide */
+img, 
+.preview-img img, 
+.preview-img, 
+.photo-preview-img-full, 
+.photo-gallery-image,
+.home-project-image,
+.home-photo-image,
+.project-image,
+.portfolio-image {
+  border-radius: 0 !important;
 }
 
 /* 4. ChatGPT-like Button Styling */

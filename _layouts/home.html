@@ -17,20 +17,25 @@ layout: default
     {% if project_posts.size > 0 %}
       <div class="home-projects-grid">
         {% for post in project_posts %}
-          <a href="{{ post.url | relative_url }}" class="home-project-tile">
-            <div class="home-project-image-wrapper">
-              {% if post.image %}
-                {% assign src = post.image.path | default: post.image %}
-                {% assign alt = post.image.alt | xml_escape | default: 'Project Image' %}
-                <img src="{{ src | relative_url }}" alt="{{ alt }}" class="home-project-image">
-              {% else %}
-                <div class="home-project-image-placeholder">
-                  <i class="fas fa-code fa-2x"></i>
-                </div>
-              {% endif %}
-            </div>
+          <a href="{{ post.url | relative_url }}" class="home-project-tile{% if post.thumbnail_image %} home-project-tile-with-image{% else %} home-project-tile-no-image{% endif %}">
+            {% if post.thumbnail_image %}
+              <div class="home-project-image-wrapper">
+                {% assign src = post.thumbnail_image.path | default: post.thumbnail_image %}
+                {% assign alt = post.thumbnail_image.alt | xml_escape | default: 'Project Thumbnail' %}
+                <img src="{{ src | relative_url }}" alt="{{ alt }}" class="home-project-image" loading="lazy" decoding="async">
+              </div>
+            {% endif %}
             <div class="home-project-content">
               <h3 class="home-project-title">{{ post.title }}</h3>
+              <div class="home-project-description">
+                {% if post.excerpt %}
+                  {{ post.excerpt }}
+                {% elsif post.thumbnail_caption %}
+                  {{ post.thumbnail_caption }}
+                {% else %}
+                  {% include post-summary.html max_length=200 %}
+                {% endif %}
+              </div>
               <div class="home-project-meta">
                 <i class="far fa-calendar fa-fw"></i>
                 {% include datetime.html date=post.date lang=lang %}
@@ -57,26 +62,40 @@ layout: default
       <div class="home-photos-grid">
         {% for post in photo_posts %}
           {% if post.gallery_images and post.gallery_images.size > 0 %}
-            <!-- Multiple images from gallery_images -->
-            {% for gallery_image in post.gallery_images %}
-              <a href="{{ post.url | relative_url }}" class="home-photo-tile">
-                <img src="{{ gallery_image | relative_url }}" alt="{{ post.title }}" class="home-photo-image">
-                <div class="home-photo-overlay">
-                  <i class="fas fa-search-plus fa-lg"></i>
-                </div>
-              </a>
-            {% endfor %}
+            <!-- Use first image from gallery_images for thumbnail -->
+            <a href="{{ post.url | relative_url }}" class="home-photo-tile">
+              <img src="{{ post.gallery_images[0] | relative_url }}" 
+                   alt="{{ post.title }}" 
+                   class="home-photo-image"
+                   loading="lazy"
+                   decoding="async">
+              <!-- Instagram-style multiple photos indicator -->
+              <div class="home-photo-multi-icon">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <div class="home-photo-overlay">
+                <i class="fas fa-search-plus fa-2x"></i>
+              </div>
+            </a>
           {% else %}
             <!-- Single image from post.image -->
             <a href="{{ post.url | relative_url }}" class="home-photo-tile">
               {% if post.image %}
                 {% assign src = post.image.path | default: post.image %}
-                <img src="{{ src | relative_url }}" alt="{{ post.title }}" class="home-photo-image">
+                <img src="{{ src | relative_url }}" 
+                     alt="{{ post.title }}" 
+                     class="home-photo-image"
+                     loading="lazy"
+                     decoding="async">
               {% elsif post.image.path %}
-                <img src="{{ post.image.path | relative_url }}" alt="{{ post.title }}" class="home-photo-image">
+                <img src="{{ post.image.path | relative_url }}" 
+                     alt="{{ post.title }}" 
+                     class="home-photo-image"
+                     loading="lazy"
+                     decoding="async">
               {% endif %}
               <div class="home-photo-overlay">
-                <i class="fas fa-search-plus fa-lg"></i>
+                <i class="fas fa-search-plus fa-2x"></i>
               </div>
             </a>
           {% endif %}
@@ -133,10 +152,11 @@ layout: default
   font-size: 0.9rem;
 }
 
-/* Projects Grid */
+/* Projects Grid - Masonry Style */
 .home-projects-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-auto-rows: 150px;
   gap: 1.5rem;
 }
 
@@ -153,6 +173,16 @@ layout: default
   box-shadow: var(--card-shadow);
 }
 
+/* Tiles with thumbnails span 2 rows */
+.home-project-tile-with-image {
+  grid-row: span 2;
+}
+
+/* Tiles without thumbnails span 1 row */
+.home-project-tile-no-image {
+  grid-row: span 1;
+}
+
 .home-project-tile:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
@@ -161,9 +191,20 @@ layout: default
 
 .home-project-image-wrapper {
   width: 100%;
-  height: 200px;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
   background: var(--img-bg);
+  border-radius: 0 !important;
+  position: relative;
+}
+
+/* Remove shimmer animation from project images */
+.home-project-image-wrapper.shimmer::before,
+.home-project-image-wrapper .shimmer::before {
+  display: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;
 }
 
 .home-project-image {
@@ -171,20 +212,16 @@ layout: default
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s ease;
+  border-radius: 0 !important;
+}
+
+/* Force all images in home layout to have no rounded corners */
+.home-container img {
+  border-radius: 0 !important;
 }
 
 .home-project-tile:hover .home-project-image {
   transform: scale(1.05);
-}
-
-.home-project-image-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--img-bg);
-  color: var(--text-muted-color);
 }
 
 .home-project-content {
@@ -197,6 +234,13 @@ layout: default
   font-weight: 600;
   color: var(--heading-color);
   line-height: 1.4;
+}
+
+.home-project-description {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
 }
 
 .home-project-meta {
@@ -214,8 +258,9 @@ layout: default
 /* Photos Grid */
 .home-photos-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2px;
+  margin: 0;
 }
 
 .home-photo-tile {
@@ -228,6 +273,14 @@ layout: default
   border-radius: 0 !important;
 }
 
+/* Remove shimmer animation from home photo images */
+.home-photo-tile.shimmer::before,
+.home-photo-tile .shimmer::before {
+  display: none !important;
+  animation: none !important;
+  -webkit-animation: none !important;
+}
+
 .home-photo-image {
   width: 100%;
   height: 100%;
@@ -235,6 +288,9 @@ layout: default
   display: block;
   border-radius: 0 !important;
   transition: transform 0.3s ease, filter 0.3s ease;
+  /* Ensure no compression - use original quality */
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
 }
 
 .home-photo-overlay {
@@ -266,6 +322,26 @@ layout: default
   filter: brightness(0.9);
 }
 
+.home-photo-multi-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.home-photo-multi-icon i {
+  font-size: 1rem;
+}
+
 .empty-state {
   text-align: center;
   color: var(--text-muted-color);
@@ -293,4 +369,41 @@ layout: default
     font-size: 1.5rem;
   }
 }
+
+@media (min-width: 769px) {
+  .home-photos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 </style>
+
+<script>
+// Remove shimmer animation from home project images when they load
+document.addEventListener('DOMContentLoaded', function() {
+  const homeProjectImages = document.querySelectorAll('.home-project-image');
+  
+  homeProjectImages.forEach(function(img) {
+    const parent = img.closest('.home-project-image-wrapper');
+    if (!parent) return;
+    
+    // Remove shimmer from parent if image is already loaded
+    if (img.complete && img.naturalWidth > 0) {
+      parent.classList.remove('shimmer');
+      parent.style.background = 'transparent';
+    }
+    
+    // Remove shimmer when image loads
+    img.addEventListener('load', function() {
+      parent.classList.remove('shimmer');
+      parent.style.background = 'transparent';
+    });
+    
+    // Also handle error case
+    img.addEventListener('error', function() {
+      parent.classList.remove('shimmer');
+    });
+  });
+});
+</script>
+
