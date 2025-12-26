@@ -69,7 +69,6 @@ main() {
     --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,/^lukegoldmeyer\.github\.io/,/^\/categories\/$/,/^\/tags\/$/" \
     --ignore-missing-alt \
     --allow-hash-href \
-    --empty-alt-ignore \
     --only-4xx \
     --url-ignore "/^\/$/,/^\/404\.html$/,/^\/categories\/$/,/^\/tags\/$/,/^\/about\/$/,/^\/portfolio\/$/,/^\/projects\/$/,/^\/posts\/.*\/$/,/^\/categories\/.*\/$/,/^\/tags\/.*\/$/,/^\{url\}/" \
     --file-ignore "/search-results\.html/"
