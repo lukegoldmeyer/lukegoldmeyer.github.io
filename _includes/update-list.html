@@ -1,17 +1,62 @@
 <!-- Get 5 last posted/updated posts -->
+<!-- On projects page: only Project posts -->
+<!-- On other pages: Photo and Project posts -->
 
 {% assign MAX_SIZE = 5 %}
 
 {% assign all_list = '' | split: '' %}
 
+{% comment %} Check which page we're on {% endcomment %}
+{% comment %} Use include.page_url and include.page_title if available (from include_cached), otherwise use page.url and page.title {% endcomment %}
+{% assign current_url = include.page_url | default: page.url %}
+{% assign current_title = include.page_title | default: page.title %}
+
+{% assign is_projects_page = false %}
+{% assign is_portfolio_page = false %}
+
+{% if current_url contains '/projects' or current_title == 'Projects' %}
+  {% assign is_projects_page = true %}
+{% endif %}
+
+{% if current_url contains '/portfolio' or current_title == 'Portfolio' %}
+  {% assign is_portfolio_page = true %}
+{% endif %}
+
 {% for post in site.posts %}
-  {% assign datetime = post.last_modified_at | default: post.date %}
+  {% if is_projects_page %}
+    {% comment %} On projects page: only show Project posts {% endcomment %}
+    {% if post.categories contains 'Project' %}
+      {% assign datetime = post.last_modified_at | default: post.date %}
 
-  {% capture elem %}
-    {{- datetime | date: "%Y%m%d%H%M%S" -}}::{{- forloop.index0 -}}
-  {% endcapture %}
+      {% capture elem %}
+        {{- datetime | date: "%Y%m%d%H%M%S" -}}::{{- forloop.index0 -}}
+      {% endcapture %}
 
-  {% assign all_list = all_list | push: elem %}
+      {% assign all_list = all_list | push: elem %}
+    {% endif %}
+  {% elsif is_portfolio_page %}
+    {% comment %} On portfolio page: only show Photo posts {% endcomment %}
+    {% if post.categories contains 'Photo' %}
+      {% assign datetime = post.last_modified_at | default: post.date %}
+
+      {% capture elem %}
+        {{- datetime | date: "%Y%m%d%H%M%S" -}}::{{- forloop.index0 -}}
+      {% endcapture %}
+
+      {% assign all_list = all_list | push: elem %}
+    {% endif %}
+  {% else %}
+    {% comment %} On other pages (home, etc.): show both Photo and Project posts {% endcomment %}
+    {% if post.categories contains 'Photo' or post.categories contains 'Project' %}
+      {% assign datetime = post.last_modified_at | default: post.date %}
+
+      {% capture elem %}
+        {{- datetime | date: "%Y%m%d%H%M%S" -}}::{{- forloop.index0 -}}
+      {% endcapture %}
+
+      {% assign all_list = all_list | push: elem %}
+    {% endif %}
+  {% endif %}
 {% endfor %}
 
 {% assign all_list = all_list | sort | reverse %}

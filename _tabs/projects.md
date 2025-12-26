@@ -7,165 +7,193 @@ order: 2
 
 {% include lang.html %}
 
-<div id="post-list" class="flex-grow-1 px-xl-1">
-
-  <h1 class="dynamic-title ps-lg-2 mb-4">Categories</h1>
-
-  <div id="category-list" class="mb-5">
-    {% assign HEAD_PREFIX = 'h_' %}
-    {% assign LIST_PREFIX = 'l_' %}
-    {% assign group_index = 0 %}
-    {% assign sort_categories = site.categories | sort %}
-
-    {% for category in sort_categories %}
-      {% assign category_name = category | first %}
-      {% assign posts_of_category = category | last %}
-      {% assign first_post = posts_of_category | first %}
-
-      {% unless category_name == 'Photography' %}
-
-        {% if category_name == first_post.categories[0] %}
-          {% assign sub_categories = '' | split: '' %}
-          {% for post in posts_of_category %}
-            {% assign second_category = post.categories[1] %}
-            {% if second_category %}
-              {% unless sub_categories contains second_category %}
-                {% assign sub_categories = sub_categories | push: second_category %}
-              {% endunless %}
-            {% endif %}
-          {% endfor %}
-          {% assign sub_categories = sub_categories | sort %}
-          {% assign sub_categories_size = sub_categories | size %}
-
-          <div class="card categories mb-3">
-            <div id="{{ HEAD_PREFIX }}{{ group_index }}" class="card-header d-flex justify-content-between hide-border-bottom">
-              <span class="ms-2">
-                <i class="far fa-folder{% if sub_categories_size > 0 %}-open{% endif %} fa-fw"></i>
-
-                {% capture _category_url %}/categories/{{ category_name | slugify | url_encode }}/{% endcapture %}
-                <a href="{{ _category_url | relative_url }}" class="mx-2">{{ category_name }}</a>
-
-                {% assign top_posts_size = site.categories[category_name] | size %}
-                <span class="text-muted small font-weight-light">
-                  {% if sub_categories_size > 0 %}
-                    {{ sub_categories_size }}
-                    {% if sub_categories_size > 1 %}
-                      {{ site.data.locales[lang].categories.category_measure.plural | default: site.data.locales[lang].categories.category_measure }}
-                    {% else %}
-                      {{ site.data.locales[lang].categories.category_measure.singular | default: site.data.locales[lang].categories.category_measure }}
-                    {% endif -%}
-                    ,
-                  {% endif %}
-
-                  {{ top_posts_size }}
-
-                  {% if top_posts_size > 1 %}
-                    {{ site.data.locales[lang].categories.post_measure.plural | default: site.data.locales[lang].categories.post_measure }}
-                  {% else %}
-                    {{ site.data.locales[lang].categories.post_measure.singular | default: site.data.locales[lang].categories.post_measure }}
-                  {% endif %}
-                </span>
-              </span>
-
-              {% if sub_categories_size > 0 %}
-                <a href="#{{ LIST_PREFIX }}{{ group_index }}" data-bs-toggle="collapse" aria-expanded="true" aria-label="{{ HEAD_PREFIX }}{{ group_index }}-trigger" class="category-trigger hide-border-bottom">
-                  <i class="fas fa-fw fa-angle-down"></i>
-                </a>
-              {% else %}
-                <span data-bs-toggle="collapse" class="category-trigger hide-border-bottom disabled">
-                  <i class="fas fa-fw fa-angle-right"></i>
-                </span>
-              {% endif %}
-            </div>
-
-            {% if sub_categories_size > 0 %}
-              <div id="{{ LIST_PREFIX }}{{ group_index }}" class="collapse show" aria-expanded="true">
-                <ul class="list-group list-group-flush">
-                  {% for sub_category in sub_categories %}
-                    <li class="list-group-item">
-                      <i class="far fa-folder fa-fw"></i>
-                      {% capture _sub_ctg_url %}/categories/{{ sub_category | slugify | url_encode }}/{% endcapture %}
-                      <a href="{{ _sub_ctg_url | relative_url }}" class="mx-2">{{ sub_category }}</a>
-                      
-                      {% assign posts_size = site.categories[sub_category] | size %}
-                      <span class="text-muted small font-weight-light">
-                        {{ posts_size }}
-                        {% if posts_size > 1 %}
-                          {{ site.data.locales[lang].categories.post_measure.plural | default: site.data.locales[lang].categories.post_measure }}
-                        {% else %}
-                          {{ site.data.locales[lang].categories.post_measure.singular | default: site.data.locales[lang].categories.post_measure }}
-                        {% endif %}
-                      </span>
-                    </li>
-                  {% endfor %}
-                </ul>
-              </div>
-            {% endif %}
-          </div>
-
-          {% assign group_index = group_index | plus: 1 %}
-        {% endif %}
-      
-      {% endunless %} {% endfor %}
-  </div>
-
-  <h1 class="dynamic-title ps-lg-2 mb-4 mt-5">Recent Projects</h1>
-
-  {% assign project_posts = "" | split: "" %}
+<div class="projects-container">
+  <h1 class="dynamic-title mb-4">Projects</h1>
   
-  {% for post in site.posts %}
-    {% unless post.categories contains 'Photography' %}
-      {% assign project_posts = project_posts | push: post %}
-    {% endunless %}
-  {% endfor %}
-
-  {% for post in project_posts limit:10 %}
-  <article class="card-wrapper card">
-    <a href="{{ post.url | relative_url }}" class="post-preview row g-0 flex-md-row-reverse">
-      {% assign card_body_col = '12' %}
-
-      {% if post.image %}
-        {% assign src = post.image.path | default: post.image %}
-        {% assign alt = post.image.alt | xml_escape | default: 'Preview Image' %}
-        <div class="col-md-5">
-          <img src="{{ src | relative_url }}" alt="{{ alt }}">
-        </div>
-        {% assign card_body_col = '7' %}
-      {% endif %}
-
-      <div class="col-md-{{ card_body_col }}">
-        <div class="card-body d-flex flex-column">
-          <h1 class="card-title my-2 mt-md-0">{{ post.title }}</h1>
-          <div class="card-text content mt-0 mb-3">
-            <p>
-              {{ post.content | markdownify | strip_html | truncate: 200 | escape }}
-            </p>
-          </div>
-          <div class="post-meta flex-grow-1 d-flex align-items-end">
-            <div class="me-auto">
-              <i class="far fa-calendar fa-fw me-1"></i>
-              {% include datetime.html date=post.date lang=lang %}
-              {% if post.categories.size > 0 %}
-                <i class="far fa-folder-open fa-fw me-1 ms-3"></i>
-                <span class="categories">
-                  {% for category in post.categories %}
-                    {{ category }}
-                    {%- unless forloop.last -%},{%- endunless -%}
-                  {% endfor %}
-                </span>
-              {% endif %}
-            </div>
-            {% if post.pin %}
-              <div class="pin ms-1">
-                <i class="fas fa-thumbtack fa-fw"></i>
-                <span>{{ site.data.locales[lang].post.pin_prompt }}</span>
+  <div class="projects-list">
+    {% for post in site.posts %}
+      {% if post.categories contains 'Project' %}
+        <article class="project-card">
+          <a href="{{ post.url | relative_url }}" class="project-card-link">
+            {% if post.thumbnail_image %}
+              <div class="project-image-wrapper">
+                {% assign src = post.thumbnail_image.path | default: post.thumbnail_image %}
+                {% assign alt = post.thumbnail_image.alt | xml_escape | default: 'Project Thumbnail' %}
+                <img src="{{ src | relative_url }}" alt="{{ alt }}" class="project-image">
               </div>
             {% endif %}
-          </div>
-        </div>
-      </div>
-    </a>
-  </article>
-  {% endfor %}
-
+            <div class="project-content">
+              <h2 class="project-title">{{ post.title }}</h2>
+              <div class="project-description">
+                {% if post.excerpt %}
+                  {{ post.excerpt }}
+                {% elsif post.thumbnail_caption %}
+                  {{ post.thumbnail_caption }}
+                {% else %}
+                  {% include post-summary.html max_length=200 %}
+                {% endif %}
+              </div>
+              <div class="project-footer">
+                <div class="project-meta">
+                  <i class="far fa-calendar fa-fw"></i>
+                  {% include datetime.html date=post.date lang=lang %}
+                </div>
+                {% if post.tags.size > 0 %}
+                  <div class="project-tags">
+                    {% for tag in post.tags %}
+                      <a href="{{ site.baseurl }}/tags/{{ tag | slugify | url_encode }}/" class="project-tag">
+                        {{ tag }}
+                      </a>
+                    {% endfor %}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+          </a>
+        </article>
+      {% endif %}
+    {% endfor %}
+  </div>
 </div>
+
+<style>
+.projects-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.project-card {
+  background: var(--card-bg);
+  border: 1px solid var(--btn-border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: var(--card-shadow);
+}
+
+.project-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  border-color: var(--link-color);
+}
+
+.project-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.project-image-wrapper {
+  width: 100%;
+  height: 200px;
+  overflow: hidden;
+  background: var(--img-bg);
+}
+
+.project-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.project-card:hover .project-image {
+  transform: scale(1.03);
+}
+
+.project-content {
+  padding: 1.5rem;
+}
+
+.project-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--heading-color);
+  line-height: 1.3;
+}
+
+.project-description {
+  color: var(--text-color);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+}
+
+.project-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--main-border-color);
+}
+
+.project-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted-color);
+}
+
+.project-meta i {
+  font-size: 0.85rem;
+}
+
+.project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.project-tag {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  background: var(--sidebar-bg);
+  border: 1px solid var(--btn-border-color);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.project-tag:hover {
+  background: var(--card-hover-bg);
+  border-color: var(--link-color);
+  color: var(--link-color);
+}
+
+@media (max-width: 768px) {
+  .projects-container {
+    padding: 1rem;
+  }
+  
+  .project-content {
+    padding: 1.5rem;
+  }
+  
+  .project-title {
+    font-size: 1.5rem;
+  }
+  
+  .project-image-wrapper {
+    height: 180px;
+  }
+  
+  .project-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+</style>

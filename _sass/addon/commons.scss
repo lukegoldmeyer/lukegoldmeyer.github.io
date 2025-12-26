@@ -8,12 +8,74 @@
   font-family: 'Space Grotesk', sans-serif !important;
 }
 
-/* 3. ROUNDED UI */
-.btn, .post-preview, .card, img, input, .search-result {
+/* 3. ROUNDED UI - ChatGPT Style */
+.btn, .post-preview, .card, input, .search-result, .project-tile, .social-link {
   border-radius: 12px !important;
 }
 
-/* Force Sidebar to be on top of everything */
+/* Images - rounded but not all (portfolio grid stays sharp) */
+img:not(.portfolio-image):not(.insta-item img) {
+  border-radius: 12px !important;
+}
+
+/* 4. ChatGPT-like Button Styling */
+.btn {
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  transition: all 0.2s ease;
+  border: 1px solid var(--btn-border-color);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 5. Card Hover Effects */
+.card, .project-tile {
+  transition: all 0.3s ease;
+}
+
+.card:hover, .project-tile:hover {
+  transform: translateY(-2px);
+}
+
+/* 6. Smooth Transitions */
+* {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* 7. Force Sidebar to be on top of everything */
 #sidebar {
   z-index: 1050 !important; /* Standard Bootstrap high z-index */
 }
+
+/* 8. Clean Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+/* 9. Input Fields - ChatGPT Style */
+input, textarea, select {
+  border: 1px solid var(--btn-border-color);
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--link-color);
+  box-shadow: 0 0 0 3px rgba(0, 86, 178, 0.1);
+}
+
+/* 10. Link Styling */
+a {
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+

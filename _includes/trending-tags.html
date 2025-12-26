@@ -1,17 +1,108 @@
 <!-- The trending tags list -->
+<!-- On projects page: only tags from Project posts -->
+<!-- On other pages: tags from all Photo and Project posts -->
 
 {% assign MAX = 10 %}
+
+{% comment %} Check which page we're on {% endcomment %}
+{% comment %} Use include.page_url and include.page_title if available (from include_cached), otherwise use page.url and page.title {% endcomment %}
+{% assign current_url = include.page_url | default: page.url %}
+{% assign current_title = include.page_title | default: page.title %}
+
+{% assign is_projects_page = false %}
+{% assign is_portfolio_page = false %}
+
+{% if current_url contains '/projects' or current_title == 'Projects' %}
+  {% assign is_projects_page = true %}
+{% endif %}
+
+{% if current_url contains '/portfolio' or current_title == 'Portfolio' %}
+  {% assign is_portfolio_page = true %}
+{% endif %}
 
 {% assign size_list = '' | split: '' %}
 {% assign tag_list = '' | split: '' %}
 
-{% for tag in site.tags %}
-  {% assign size = tag | last | size %}
-  {% assign size_list = size_list | push: size %}
-
-  {% assign tag_str = tag | first | append: '::' | append: size %}
-  {% assign tag_list = tag_list | push: tag_str %}
-{% endfor %}
+{% if is_projects_page %}
+  {% comment %} On projects page: only count tags from Project posts {% endcomment %}
+  {% assign filtered_tags = '' | split: '' %}
+  {% for post in site.posts %}
+    {% if post.categories contains 'Project' and post.tags.size > 0 %}
+      {% for tag in post.tags %}
+        {% unless filtered_tags contains tag %}
+          {% assign filtered_tags = filtered_tags | push: tag %}
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+  
+  {% comment %} Count tag occurrences in Project posts only {% endcomment %}
+  {% for tag_name in filtered_tags %}
+    {% assign tag_count = 0 %}
+    {% for post in site.posts %}
+      {% if post.categories contains 'Project' and post.tags contains tag_name %}
+        {% assign tag_count = tag_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    {% assign size_list = size_list | push: tag_count %}
+    {% assign tag_str = tag_name | append: '::' | append: tag_count %}
+    {% assign tag_list = tag_list | push: tag_str %}
+  {% endfor %}
+{% elsif is_portfolio_page %}
+  {% comment %} On portfolio page: only count tags from Photo posts {% endcomment %}
+  {% assign filtered_tags = '' | split: '' %}
+  {% for post in site.posts %}
+    {% if post.categories contains 'Photo' and post.tags.size > 0 %}
+      {% for tag in post.tags %}
+        {% unless filtered_tags contains tag %}
+          {% assign filtered_tags = filtered_tags | push: tag %}
+        {% endunless %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+  
+  {% comment %} Count tag occurrences in Photo posts only {% endcomment %}
+  {% for tag_name in filtered_tags %}
+    {% assign tag_count = 0 %}
+    {% for post in site.posts %}
+      {% if post.categories contains 'Photo' and post.tags contains tag_name %}
+        {% assign tag_count = tag_count | plus: 1 %}
+      {% endif %}
+    {% endfor %}
+    {% assign size_list = size_list | push: tag_count %}
+    {% assign tag_str = tag_name | append: '::' | append: tag_count %}
+    {% assign tag_list = tag_list | push: tag_str %}
+  {% endfor %}
+{% else %}
+  {% comment %} On other pages (home, etc.): count tags from Photo and Project posts {% endcomment %}
+  {% assign filtered_tags = '' | split: '' %}
+  {% for post in site.posts %}
+    {% if post.categories contains 'Photo' or post.categories contains 'Project' %}
+      {% if post.tags.size > 0 %}
+        {% for tag in post.tags %}
+          {% unless filtered_tags contains tag %}
+            {% assign filtered_tags = filtered_tags | push: tag %}
+          {% endunless %}
+        {% endfor %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+  
+  {% comment %} Count tag occurrences in Photo and Project posts {% endcomment %}
+  {% for tag_name in filtered_tags %}
+    {% assign tag_count = 0 %}
+    {% for post in site.posts %}
+      {% if post.categories contains 'Photo' or post.categories contains 'Project' %}
+        {% if post.tags contains tag_name %}
+          {% assign tag_count = tag_count | plus: 1 %}
+        {% endif %}
+      {% endif %}
+    {% endfor %}
+    {% assign size_list = size_list | push: tag_count %}
+    {% assign tag_str = tag_name | append: '::' | append: tag_count %}
+    {% assign tag_list = tag_list | push: tag_str %}
+  {% endfor %}
+{% endif %}
 
 {% assign size_list = size_list | sort | reverse %}
 
