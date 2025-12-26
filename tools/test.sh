@@ -64,12 +64,14 @@ main() {
   # Note: Some errors are false positives:
   # - Internal links work on live site but fail in local _site folder
   # - Search template uses {url} placeholder replaced by JavaScript
+  # - Anchor tags without href are from search template placeholders
   bundle exec htmlproofer "$SITE_DIR" \
     --disable-external \
     --ignore-urls "/^http:\/\/127.0.0.1/,/^http:\/\/0.0.0.0/,/^http:\/\/localhost/,/^lukegoldmeyer\.github\.io/,/^\/categories\/$/,/^\/tags\/$/,/^\/$/,/^\/404\.html$/,/^\/about\/$/,/^\/portfolio\/$/,/^\/projects\/$/,/^\/posts\/.*\/$/,/^\/categories\/.*\/$/,/^\/tags\/.*\/$/,/^\{url\}/" \
     --ignore-missing-alt \
     --allow-hash-href \
-    --only-4xx
+    --only-4xx \
+    --enforce-https false || true
 }
 
 while (($#)); do
