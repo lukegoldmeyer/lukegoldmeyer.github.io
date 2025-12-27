@@ -20,26 +20,17 @@ order: 3
     
     {% for post in portfolio_posts %}
       <a href="{{ post.url | relative_url }}" class="portfolio-item">
-        {% if post.gallery_images and post.gallery_images.size > 0 %}
-          <!-- Use first image from gallery_images -->
-          <img src="{{ post.gallery_images[0] | relative_url }}" 
-               alt="{{ post.title }}" 
-               class="portfolio-image"
-               loading="lazy"
-               decoding="async">
-          <!-- Instagram-style multiple photos indicator -->
-          <div class="portfolio-multi-icon">
-            <i class="fas fa-layer-group"></i>
-          </div>
-        {% elsif post.image.path %}
-          <img src="{{ post.image.path | relative_url }}" 
-               alt="{{ post.title }}" 
+        {% if post.thumbnail_image %}
+          {% assign src = post.thumbnail_image.path | default: post.thumbnail_image %}
+          <img src="{{ src | relative_url }}" 
+               alt="{{ post.thumbnail_image.alt | default: post.title }}" 
                class="portfolio-image"
                loading="lazy"
                decoding="async">
         {% elsif post.image %}
-          <img src="{{ post.image | relative_url }}" 
-               alt="{{ post.title }}" 
+          {% assign src = post.image.path | default: post.image %}
+          <img src="{{ src | relative_url }}" 
+               alt="{{ post.image.alt | default: post.title }}" 
                class="portfolio-image"
                loading="lazy"
                decoding="async">
@@ -164,25 +155,6 @@ order: 3
   filter: brightness(0.9);
 }
 
-.portfolio-multi-icon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.portfolio-multi-icon i {
-  font-size: 1rem;
-}
 
 /* Mobile adjustments */
 @media (max-width: 768px) {

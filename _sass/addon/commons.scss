@@ -13,17 +13,72 @@
   border-radius: 12px !important;
 }
 
-/* Images - NO rounded corners sitewide */
-img, 
-.preview-img img, 
-.preview-img, 
-.photo-preview-img-full, 
+/* Images - NO rounded corners sitewide - override ALL image border-radius rules */
+/* This must come after all other styles to override placeholders and specific rules */
+img,
+img *,
+.preview-img,
+.preview-img *,
+.preview-img img,
+.photo-preview-img-full,
 .photo-gallery-image,
+.photo-gallery-item,
+.photo-gallery-item img,
 .home-project-image,
+.home-project-image-wrapper,
+.home-project-image-wrapper img,
 .home-photo-image,
+.home-photo-tile,
+.home-photo-tile *,
+.home-photo-overlay,
+.home-photos-grid,
+.home-photos-grid *,
+.home-photos-grid img,
 .project-image,
-.portfolio-image {
+.project-image-wrapper,
+.project-image-wrapper img,
+.project-card img,
+.portfolio-image,
+.portfolio-item,
+.portfolio-item img,
+.content img,
+.content figure,
+.content figure img,
+.content p img,
+.content > p > img,
+.post-preview img,
+.card img,
+#post-list img,
+#post-list .preview-img,
+#post-list .preview-img img,
+#post-list .card img,
+figure,
+figure img,
+article img,
+main img,
+[class*="img"],
+[class*="image"],
+[class*="photo"] {
   border-radius: 0 !important;
+}
+
+/* Force no border-radius on home photo tiles - override any card/post-preview styles */
+.home-photos-grid a,
+.home-photos-grid .home-photo-tile,
+.home-photos-grid .home-photo-tile *,
+.home-photos-grid img {
+  border-radius: 0 !important;
+}
+
+/* Override any %rounded or %img-radius placeholders for images */
+.preview-img,
+.preview-img img {
+  border-radius: 0 !important;
+}
+
+/* Keep multi-photo icon circular */
+.home-photo-multi-icon {
+  border-radius: 50% !important;
 }
 
 /* 4. ChatGPT-like Button Styling */

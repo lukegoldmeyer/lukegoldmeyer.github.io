@@ -10,9 +10,16 @@ excerpt: This is the second dummy project post for testing purposes.
 ---
 
 ## Description
+
 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 
+<figure>
+  <img src="/assets/img/testimagelandscape.jpg" alt="Dummy Project 2 Preview">
+  <figcaption>Project prototype showing the assembled components</figcaption>
+</figure>
+
 ## What I Did
+
 - Built a prototype
 - Tested the functionality
 - Documented the process
@@ -26,8 +33,6 @@ function dummyFunction() {
 }
 ```
 
-
-
 ## Next Steps
-More will be added as the project continues.
 
+More will be added as the project continues.

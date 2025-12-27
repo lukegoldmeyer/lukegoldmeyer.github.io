@@ -20,13 +20,6 @@ swcache: true
     {%- if post.thumbnail_image.alt -%}
       {%- assign alt_texts = alt_texts | push: post.thumbnail_image.alt -%}
     {%- endif -%}
-    {%- if post.gallery_images -%}
-      {%- for gallery_image in post.gallery_images -%}
-        {%- if gallery_image.alt -%}
-          {%- assign alt_texts = alt_texts | push: gallery_image.alt -%}
-        {%- endif -%}
-      {%- endfor -%}
-    {%- endif -%}
     {%- if alt_texts.size > 0 -%}
       {%- assign alt_text_string = alt_texts | join: ' ' -%}
       {%- assign content = content | append: ' ' | append: alt_text_string -%}

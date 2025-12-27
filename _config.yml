@@ -180,8 +180,7 @@ defaults:
       layout: post
       comments: true # Enable comments in posts.
       toc: true # Display TOC column in posts.
-      # DO NOT modify the following parameter unless you are confident enough
-      # to update the code of all other post links in this project.
+      # Permalink uses title slug instead of filename
       permalink: /posts/:title/
   - scope:
       path: _drafts

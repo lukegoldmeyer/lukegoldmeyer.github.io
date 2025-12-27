@@ -9,12 +9,12 @@ order: 4
   <div class="about-content">
     <!-- Photo Section -->
     <div class="about-photo-section">
-      <img src="/assets/img/Luke-65edit.jpg" alt="Luke Goldmeyer" class="about-photo">
+      <img src="/assets/img/Luke-41edit.jpg" alt="Luke Goldmeyer" class="about-photo">
     </div>
 
     <!-- Bio Section -->
     <div class="about-bio-section">
-      <h2>About Me</h2>
+      <h2>Bio</h2>
       <p class="about-bio">
         I am an engineering student, developer, photographer, musician, and cyclist. 
         I love building things, solving problems, and capturing moments through photography.
@@ -54,7 +54,7 @@ order: 4
 
 <style>
 .about-container {
-  max-width: 800px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 2rem 0;
 }
@@ -66,17 +66,21 @@ order: 4
 }
 
 .about-photo-section {
-  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .about-photo {
-  width: 250px;
-  height: 250px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 4px solid var(--main-border-color);
-  box-shadow: var(--card-shadow);
+  width: auto;
+  height: auto;
+  max-width: 400px;
+  max-height: 50vh;
+  border-radius: 0;
+  object-fit: contain;
+  display: block;
 }
+
 
 .about-bio-section h2 {
   margin-bottom: 1rem;
@@ -162,9 +166,17 @@ order: 4
 }
 
 @media (max-width: 768px) {
+  .about-content {
+    flex-direction: column;
+  }
+  
+  .about-photo-section {
+    width: 100%;
+  }
+  
   .about-photo {
-    width: 200px;
-    height: 200px;
+    width: 100%;
+    max-height: 70vh;
   }
   
   .social-icons {

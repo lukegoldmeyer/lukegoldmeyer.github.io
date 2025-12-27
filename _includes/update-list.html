@@ -13,6 +13,8 @@
 
 {% assign is_projects_page = false %}
 {% assign is_portfolio_page = false %}
+{% assign is_photo_post = false %}
+{% assign is_project_post = false %}
 
 {% if current_url contains '/projects' or current_title == 'Projects' %}
   {% assign is_projects_page = true %}
@@ -22,9 +24,18 @@
   {% assign is_portfolio_page = true %}
 {% endif %}
 
+{% comment %} Check if we're on a photo or project post page {% endcomment %}
+{% if page.categories contains 'Photo' %}
+  {% assign is_photo_post = true %}
+{% endif %}
+
+{% if page.categories contains 'Project' %}
+  {% assign is_project_post = true %}
+{% endif %}
+
 {% for post in site.posts %}
-  {% if is_projects_page %}
-    {% comment %} On projects page: only show Project posts {% endcomment %}
+  {% if is_projects_page or is_project_post %}
+    {% comment %} On projects page or project post: only show Project posts {% endcomment %}
     {% if post.categories contains 'Project' %}
       {% assign datetime = post.last_modified_at | default: post.date %}
 
@@ -34,8 +45,8 @@
 
       {% assign all_list = all_list | push: elem %}
     {% endif %}
-  {% elsif is_portfolio_page %}
-    {% comment %} On portfolio page: only show Photo posts {% endcomment %}
+  {% elsif is_portfolio_page or is_photo_post %}
+    {% comment %} On portfolio page or photo post: only show Photo posts {% endcomment %}
     {% if post.categories contains 'Photo' %}
       {% assign datetime = post.last_modified_at | default: post.date %}
 

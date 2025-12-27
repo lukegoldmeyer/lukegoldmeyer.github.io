@@ -11,6 +11,8 @@
 
 {% assign is_projects_page = false %}
 {% assign is_portfolio_page = false %}
+{% assign is_photo_post = false %}
+{% assign is_project_post = false %}
 
 {% if current_url contains '/projects' or current_title == 'Projects' %}
   {% assign is_projects_page = true %}
@@ -20,11 +22,20 @@
   {% assign is_portfolio_page = true %}
 {% endif %}
 
+{% comment %} Check if we're on a photo or project post page {% endcomment %}
+{% if page.categories contains 'Photo' %}
+  {% assign is_photo_post = true %}
+{% endif %}
+
+{% if page.categories contains 'Project' %}
+  {% assign is_project_post = true %}
+{% endif %}
+
 {% assign size_list = '' | split: '' %}
 {% assign tag_list = '' | split: '' %}
 
-{% if is_projects_page %}
-  {% comment %} On projects page: only count tags from Project posts {% endcomment %}
+{% if is_projects_page or is_project_post %}
+  {% comment %} On projects page or project post: only count tags from Project posts {% endcomment %}
   {% assign filtered_tags = '' | split: '' %}
   {% for post in site.posts %}
     {% if post.categories contains 'Project' and post.tags.size > 0 %}
@@ -48,8 +59,8 @@
     {% assign tag_str = tag_name | append: '::' | append: tag_count %}
     {% assign tag_list = tag_list | push: tag_str %}
   {% endfor %}
-{% elsif is_portfolio_page %}
-  {% comment %} On portfolio page: only count tags from Photo posts {% endcomment %}
+{% elsif is_portfolio_page or is_photo_post %}
+  {% comment %} On portfolio page or photo post: only count tags from Photo posts {% endcomment %}
   {% assign filtered_tags = '' | split: '' %}
   {% for post in site.posts %}
     {% if post.categories contains 'Photo' and post.tags.size > 0 %}

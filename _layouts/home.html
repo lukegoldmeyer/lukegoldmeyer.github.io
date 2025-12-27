@@ -61,44 +61,26 @@ layout: default
     {% if photo_posts.size > 0 %}
       <div class="home-photos-grid">
         {% for post in photo_posts %}
-          {% if post.gallery_images and post.gallery_images.size > 0 %}
-            <!-- Use first image from gallery_images for thumbnail -->
-            <a href="{{ post.url | relative_url }}" class="home-photo-tile">
-              <img src="{{ post.gallery_images[0] | relative_url }}" 
-                   alt="{{ post.title }}" 
+          <a href="{{ post.url | relative_url }}" class="home-photo-tile">
+            {% if post.thumbnail_image %}
+              {% assign src = post.thumbnail_image.path | default: post.thumbnail_image %}
+              <img src="{{ src | relative_url }}" 
+                   alt="{{ post.thumbnail_image.alt | default: post.title }}" 
                    class="home-photo-image"
                    loading="lazy"
                    decoding="async">
-              <!-- Instagram-style multiple photos indicator -->
-              <div class="home-photo-multi-icon">
-                <i class="fas fa-layer-group"></i>
-              </div>
-              <div class="home-photo-overlay">
-                <i class="fas fa-search-plus fa-2x"></i>
-              </div>
-            </a>
-          {% else %}
-            <!-- Single image from post.image -->
-            <a href="{{ post.url | relative_url }}" class="home-photo-tile">
-              {% if post.image %}
-                {% assign src = post.image.path | default: post.image %}
-                <img src="{{ src | relative_url }}" 
-                     alt="{{ post.title }}" 
-                     class="home-photo-image"
-                     loading="lazy"
-                     decoding="async">
-              {% elsif post.image.path %}
-                <img src="{{ post.image.path | relative_url }}" 
-                     alt="{{ post.title }}" 
-                     class="home-photo-image"
-                     loading="lazy"
-                     decoding="async">
-              {% endif %}
-              <div class="home-photo-overlay">
-                <i class="fas fa-search-plus fa-2x"></i>
-              </div>
-            </a>
-          {% endif %}
+            {% elsif post.image %}
+              {% assign src = post.image.path | default: post.image %}
+              <img src="{{ src | relative_url }}" 
+                   alt="{{ post.image.alt | default: post.title }}" 
+                   class="home-photo-image"
+                   loading="lazy"
+                   decoding="async">
+            {% endif %}
+            <div class="home-photo-overlay">
+              <i class="fas fa-search-plus fa-2x"></i>
+            </div>
+          </a>
         {% endfor %}
       </div>
     {% else %}
@@ -191,8 +173,8 @@ layout: default
 
 .home-project-image-wrapper {
   width: 100%;
-  flex: 1;
-  min-height: 0;
+  height: 50%;
+  flex-shrink: 0;
   overflow: hidden;
   background: var(--img-bg);
   border-radius: 0 !important;
@@ -226,6 +208,9 @@ layout: default
 
 .home-project-content {
   padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .home-project-title {
@@ -241,6 +226,7 @@ layout: default
   line-height: 1.6;
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
+  flex-grow: 1;
 }
 
 .home-project-meta {
@@ -249,6 +235,7 @@ layout: default
   gap: 0.5rem;
   font-size: 0.85rem;
   color: var(--text-muted-color);
+  margin-top: auto;
 }
 
 .home-project-meta i {
@@ -261,6 +248,15 @@ layout: default
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 2px;
   margin: 0;
+}
+
+/* Force no border-radius on all photo-related elements */
+.home-photos-grid *,
+.home-photo-tile,
+.home-photo-tile *,
+.home-photo-image,
+.home-photo-overlay {
+  border-radius: 0 !important;
 }
 
 .home-photo-tile {
@@ -322,25 +318,6 @@ layout: default
   filter: brightness(0.9);
 }
 
-.home-photo-multi-icon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.home-photo-multi-icon i {
-  font-size: 1rem;
-}
 
 .empty-state {
   text-align: center;

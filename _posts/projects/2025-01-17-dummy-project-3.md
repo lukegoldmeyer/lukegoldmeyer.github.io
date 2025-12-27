@@ -7,7 +7,9 @@ excerpt: Third dummy project post in the series.
 ---
 
 ## Description
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+
+hello this is a description
+
 
 ## Implementation
 
@@ -25,6 +27,12 @@ const project: DummyProject = {
 };
 ```
 
-## Progress
-More will be added as the project continues.
+```bash
+sudo apt get update
+```
 
+
+
+## Progress
+
+More will be added as the project continues.
