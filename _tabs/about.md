@@ -9,15 +9,25 @@ order: 4
   <div class="about-content">
     <!-- Photo Section -->
     <div class="about-photo-section">
-      <img src="/assets/img/Luke-41edit.jpg" alt="Luke Goldmeyer" class="about-photo">
+      <img src="/assets/img/site/luke-portrait.jpg" alt="Luke's Portrait" class="about-photo">
     </div>
 
     <!-- Bio Section -->
     <div class="about-bio-section">
-      <h2>Bio</h2>
+      <h2>Who am I?</h2>
       <p class="about-bio">
-        I am an engineering student, developer, photographer, musician, and cyclist. 
-        I love building things, solving problems, and capturing moments through photography.
+        <p>I am an engineering student, developer, photographer, musician, and cyclist. 
+        I love building things, solving problems, and capturing moments with photography.</p>
+
+       <p> I am a student at the Texas A&M College of Engineering, Fightin' Texas Aggie class of 2029. I enjoy creating and building, and I am always working on something. See my project blog posts! </p>
+
+       <p> Photography and videography have both been staples of my creative outlets. I hope to capture the mundane and make it look beautiful, and I hope to capture the beautiful and make it look breathtaking.</p>
+
+       <p> Music is an irreplacible part of my life, from piano performance to just listening. Find me on Apple Music. (Might get spotify one day.)</p>
+        
+       <p> I don't want to rot indoors, so I like to get out. Cycling is my weapon of choice. I ride road and mountain, but I usually prefer the latter. I enjoyed my time working at Velo Republic Bikes for a year or so, and I am thankful to have been a part of the NTX NICA cross country MTB team. </p>
+
+       <p> This site serves to present my work, in both project blogs and photography showcases. Please don't hesitate to send me a message in one of the places below. </p>
       </p>
     </div>
 

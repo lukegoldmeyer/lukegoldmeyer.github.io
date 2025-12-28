@@ -1,0 +1,80 @@
+<!-- Project Archive -->
+<!-- Displayed on home page, projects page, and project posts -->
+
+{% comment %} Check which page we're on {% endcomment %}
+{% comment %} Use include.page_url and include.page_title if available (from include_cached), otherwise use page.url and page.title {% endcomment %}
+{% assign current_url = include.page_url | default: page.url %}
+{% assign current_title = include.page_title | default: page.title %}
+
+{% assign is_home_page = false %}
+{% assign is_projects_page = false %}
+{% assign is_project_post = false %}
+
+{% if page.layout == 'home' or current_url == '/' or current_url == '' %}
+  {% assign is_home_page = true %}
+{% endif %}
+
+{% if current_url contains '/projects' or current_title == 'Projects' %}
+  {% assign is_projects_page = true %}
+{% endif %}
+
+{% comment %} Check if we're on a project post page {% endcomment %}
+{% if page.categories contains 'Project' %}
+  {% assign is_project_post = true %}
+{% endif %}
+
+{% comment %} Show archive on home page, projects page, or project posts {% endcomment %}
+{% if is_home_page or is_projects_page or is_project_post %}
+    {% comment %} Collect all project posts {% endcomment %}
+    {% assign project_posts = '' | split: '' %}
+    {% for post in site.posts %}
+      {% if post.categories contains 'Project' %}
+        {% assign project_posts = project_posts | push: post %}
+      {% endif %}
+    {% endfor %}
+
+    {% comment %} Get unique years from project posts {% endcomment %}
+    {% assign years = '' | split: '' %}
+    {% for post in project_posts %}
+      {% assign post_year = post.date | date: '%Y' %}
+      {% unless years contains post_year %}
+        {% assign years = years | push: post_year %}
+      {% endunless %}
+    {% endfor %}
+
+    {% comment %} Sort years in descending order {% endcomment %}
+    {% assign years = years | sort | reverse %}
+
+  {% if project_posts.size > 0 %}
+    <section id="project-archive">
+      <h2 class="panel-heading">{{- site.data.locales[include.lang].panel.archive | default: 'Archive' -}}</h2>
+      <div class="content mt-3">
+        {% for year in years %}
+          <div class="archive-year mb-3">
+            <h3 class="archive-year-title mb-2" style="font-size: 1rem; font-weight: 600; color: var(--heading-color);">
+              {{ year }}
+            </h3>
+            <ul class="list-unstyled ps-0 ms-2 mb-0">
+              {% for post in project_posts %}
+                {% assign post_year = post.date | date: '%Y' %}
+                {% if post_year == year %}
+                  <li class="archive-item mb-1">
+                    <a href="{{ post.url | relative_url }}" class="text-truncate d-block" style="text-decoration: none; color: var(--text-color);">
+                      <span class="archive-date" style="font-size: 0.85rem; color: var(--text-muted-color);">
+                        {{ post.date | date: '%b %d' }}
+                      </span>
+                      <span class="archive-title" style="margin-left: 0.5rem;">
+                        {{ post.title }}
+                      </span>
+                    </a>
+                  </li>
+                {% endif %}
+              {% endfor %}
+            </ul>
+          </div>
+        {% endfor %}
+      </div>
+    </section>
+  {% endif %}
+{% endif %}
+
