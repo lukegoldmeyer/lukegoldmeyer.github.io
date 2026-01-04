@@ -34,10 +34,21 @@ order: 2
                 {% endif %}
               </div>
               <div class="project-footer">
+                
                 <div class="project-meta">
-                  <i class="far fa-calendar fa-fw"></i>
-                  {% include datetime.html date=post.date lang=lang %}
+                  <div class="d-flex align-items-center">
+                    <i class="far fa-calendar fa-fw me-1"></i>
+                    {% include datetime.html date=post.date lang=lang %}
+                  </div>
+
+                  {% if post.pin %}
+                    <div class="d-flex align-items-center ms-3" style="color: var(--heading-color); font-weight: 600;">
+                      <i class="fas fa-thumbtack fa-fw me-1"></i>
+                      <span>{{ site.data.locales[lang].post.pin_prompt | default: 'Pinned' }}</span>
+                    </div>
+                  {% endif %}
                 </div>
+
                 {% if post.tags.size > 0 %}
                   <div class="project-tags">
                     {% for tag in post.tags %}
@@ -141,7 +152,6 @@ order: 2
 .project-meta {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   font-size: 0.9rem;
   color: var(--text-muted-color);
 }

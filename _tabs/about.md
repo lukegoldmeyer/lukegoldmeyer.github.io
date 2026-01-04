@@ -23,7 +23,7 @@ order: 4
 
        <p> Photography and videography have both been staples of my creative outlets. I hope to capture the mundane and make it look beautiful, and I hope to capture the beautiful and make it look breathtaking.</p>
 
-       <p> Music is an irreplacible part of my life, from piano performance to just listening. Find me on Apple Music. (Might get spotify one day.)</p>
+       <p> Music is an irreplacible part of my life, from piano performance to just listening. Find me on Apple Music.</p>
         
        <p> I don't want to rot indoors, so I like to get out. Cycling is my weapon of choice. I ride road and mountain, but I usually prefer the latter. I enjoyed my time working at Velo Republic Bikes for a year or so, and I am thankful to have been a part of the NTX NICA cross country MTB team. </p>
 

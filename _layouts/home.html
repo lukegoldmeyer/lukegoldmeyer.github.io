@@ -5,14 +5,16 @@ layout: default
 {% include lang.html %}
 
 <div class="home-container">
-  <!-- Recent Projects Section -->
   <section class="home-section">
     <div class="section-header">
       <h1 class="section-title">Recent Projects</h1>
       <a href="/projects/" class="section-link">View All Projects <i class="fas fa-arrow-right"></i></a>
     </div>
     
-    {% assign project_posts = site.categories.Project | limit: 6 %}
+    {% assign all_projects = site.categories.Project %}
+    {% assign pinned_projects = all_projects | where: "pin", "true" %}
+    {% assign default_projects = all_projects | where_exp: "item", "item.pin != true" %}
+    {% assign project_posts = pinned_projects | concat: default_projects | limit: 6 %}
     
     {% if project_posts.size > 0 %}
       <div class="home-projects-grid">
@@ -39,6 +41,13 @@ layout: default
               <div class="home-project-meta">
                 <i class="far fa-calendar fa-fw"></i>
                 {% include datetime.html date=post.date lang=lang %}
+
+                {% if post.pin %}
+                  <span class="ms-3" style="color: var(--heading-color); font-weight: bold;">
+                    <i class="fas fa-thumbtack fa-fw me-1"></i>
+                    <span>Pinned</span>
+                  </span>
+                {% endif %}
               </div>
             </div>
           </a>
@@ -49,7 +58,6 @@ layout: default
     {% endif %}
   </section>
 
-  <!-- Recent Photos Section -->
   <section class="home-section">
     <div class="section-header">
       <h1 class="section-title">Recent Photos</h1>
@@ -284,7 +292,6 @@ layout: default
   display: block;
   border-radius: 0 !important;
   transition: transform 0.3s ease, filter 0.3s ease;
-  /* Ensure no compression - use original quality */
   image-rendering: -webkit-optimize-contrast;
   image-rendering: crisp-edges;
 }
@@ -383,4 +390,3 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 });
 </script>
-

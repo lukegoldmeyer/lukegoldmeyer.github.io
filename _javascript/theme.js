@@ -26,15 +26,13 @@ class Theme {
 
   /**
    * Gets the current visual state of the theme.
-   *
-   * @returns {string} The current visual state, either the mode if it exists,
-   *                   or the system dark mode state ('dark' or 'light').
    */
   static get visualState() {
     if (this.#hasMode) {
       return this.#mode;
     } else {
-      return this.#sysDark ? this.DARK : this.LIGHT;
+      // Fallback: Default to LIGHT even if system is dark
+      return this.LIGHT;
     }
   }
 
@@ -57,12 +55,6 @@ class Theme {
     return this.#darkMedia.matches;
   }
 
-  /**
-   * Maps theme modes to provided values
-   * @param {string} light Value for light mode
-   * @param {string} dark Value for dark mode
-   * @returns {Object} Mapped values
-   */
   static getThemeMapper(light, dark) {
     return {
       [this.LIGHT]: light,
@@ -74,10 +66,12 @@ class Theme {
    * Initializes the theme based on system preferences or stored mode
    */
   static init() {
+    // If the theme is locked in _config.yml, do nothing
     if (!this.switchable) {
       return;
     }
 
+    // Listen for system changes (OS Dark Mode toggle)
     this.#darkMedia.addEventListener('change', () => {
       const lastMode = this.#mode;
       this.#clearMode();
@@ -87,10 +81,15 @@ class Theme {
       }
     });
 
+    // === THE FIX ===
+    // If the user has NO saved preference (First visit), FORCE Light Mode.
     if (!this.#hasMode) {
-      return;
+      this.#setLight(); 
+      return; 
     }
+    // ===============
 
+    // Otherwise, load their saved preference
     if (this.#isDarkMode) {
       this.#setDark();
     } else {
@@ -102,10 +101,11 @@ class Theme {
    * Flips the current theme mode
    */
   static flip() {
-    if (this.#hasMode) {
-      this.#clearMode();
+    // CHANGE 2: Simplified toggle. Never "clear" mode, always set explicit.
+    if (this.visualState === this.LIGHT) {
+      this.#setDark();
     } else {
-      this.#sysDark ? this.#setLight() : this.#setDark();
+      this.#setLight();
     }
     this.#notify();
   }
@@ -125,9 +125,6 @@ class Theme {
     sessionStorage.removeItem(this.#modeKey);
   }
 
-  /**
-   * Notifies other plugins that the theme mode has changed
-   */
   static #notify() {
     window.postMessage({ id: this.ID }, '*');
   }
