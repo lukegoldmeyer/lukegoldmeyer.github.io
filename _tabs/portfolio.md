@@ -18,8 +18,23 @@ order: 3
   <div class="portfolio-grid">
     {% assign portfolio_posts = site.categories.Photo %}
     
-    {% for post in portfolio_posts %}
+    {% comment %} 1. Filter posts into Pinned and Unpinned {% endcomment %}
+    {% assign pinned_posts = portfolio_posts | where: "pin", true %}
+    {% assign unpinned_posts = portfolio_posts | where_exp: "item", "item.pin != true" %}
+    
+    {% comment %} 2. Combine arrays: Pinned posts first {% endcomment %}
+    {% assign sorted_posts = pinned_posts | concat: unpinned_posts %}
+    
+    {% for post in sorted_posts %}
       <a href="{{ post.url | relative_url }}" class="portfolio-item">
+        
+        {% comment %} Optional: Pin Indicator Icon {% endcomment %}
+        {% if post.pin %}
+        <div class="pin-indicator">
+          <i class="fas fa-thumbtack"></i>
+        </div>
+        {% endif %}
+
         {% if post.thumbnail_image %}
           {% assign src = post.thumbnail_image.path | default: post.thumbnail_image %}
           <img src="{{ src | relative_url }}" 
@@ -35,6 +50,7 @@ order: 3
                loading="lazy"
                decoding="async">
         {% endif %}
+        
         <div class="portfolio-overlay">
           <i class="fas fa-search-plus fa-2x"></i>
         </div>
@@ -114,6 +130,30 @@ order: 3
   border-radius: 0 !important;
 }
 
+/* --- Pin Indicator Styles --- */
+.pin-indicator {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  pointer-events: none; /* Allows clicks to pass through to the link */
+}
+
+.pin-indicator i {
+  font-size: 0.9rem;
+  transform: rotate(30deg); /* Angled look */
+}
+
 .portfolio-image {
   width: 100%;
   height: 100%;
@@ -155,7 +195,6 @@ order: 3
   filter: brightness(0.9);
 }
 
-
 /* Mobile adjustments */
 @media (max-width: 768px) {
   .portfolio-grid {
@@ -169,6 +208,18 @@ order: 3
   
   .portfolio-container {
     padding: 1rem 0.5rem;
+  }
+
+  /* Scale down the pin on mobile */
+  .pin-indicator {
+    width: 22px;
+    height: 22px;
+    top: 0.4rem;
+    right: 0.4rem;
+  }
+  
+  .pin-indicator i {
+    font-size: 0.7rem;
   }
 }
 
