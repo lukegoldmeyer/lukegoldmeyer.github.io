@@ -41,7 +41,7 @@ tags: [Automotive, Vintage, D80, Camaro]
 # Note: Tags are displayed on the Portfolio page and can be clicked to filter
 
 thumbnail_image:
-  path: /assets\img\dusold_gen2_camaro.jpg
+  path: /assets/img/dusold_gen2_camaro.jpg
   alt: A jet black 2nd Generation Camaro sits in the Dusold Designs garage.
 # OPTIONAL: Thumbnail shown on Portfolio page and home page
 # - If NOT specified, no thumbnail will be shown on listing pages
