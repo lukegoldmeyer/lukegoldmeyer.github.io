@@ -11,6 +11,10 @@ const nameParts = site.name.trim().split(/\s+/);
 const firstName = nameParts[0] ?? site.name;
 const restName = nameParts.slice(1).join(' ');
 
+/** Narrow viewports: break “Goldmeyer” into two lines (Gold / Meyer), no hyphen. */
+const heroLastSplit =
+	restName.trim().toLowerCase() === 'goldmeyer' ? (['Gold', 'Meyer'] as const) : null;
+
 const bioParagraphs = site.bio
 	.trim()
 	.split(/\n\s*\n/)
@@ -47,15 +51,27 @@ function pyearLine(project: (typeof recentProjects)[0]) {
 			<div class="scroll-line"></div>
 		</div>
 		<p class="hero-eyebrow">{site.role}</p>
-		<h1 class="hero-title">
-			<span class="line">
+		<h1 class:list={['hero-title', heroLastSplit && 'hero-title--split-last']}>
+			<span class="line hero-line-first">
 				<span class="line-inner">{firstName}</span>
 			</span>
 			{
 				restName ? (
-					<span class="line">
-						<span class="line-inner">{restName}</span>
-					</span>
+					<>
+						<span class="line hero-line-last-full">
+							<span class="line-inner">{restName}</span>
+						</span>
+						{heroLastSplit ? (
+							<>
+								<span class="line hero-line-last-a">
+									<span class="line-inner">{heroLastSplit[0]}</span>
+								</span>
+								<span class="line hero-line-last-b">
+									<span class="line-inner">{heroLastSplit[1]}</span>
+								</span>
+							</>
+						) : null}
+					</>
 				) : null
 			}
 		</h1>

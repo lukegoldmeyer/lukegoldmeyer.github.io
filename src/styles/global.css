@@ -101,10 +101,14 @@ main {
 	left: 0;
 	right: 0;
 	z-index: 200;
-	padding: 22px var(--nav-pad);
-	display: flex;
+	padding-top: max(22px, env(safe-area-inset-top));
+	padding-bottom: 22px;
+	padding-left: max(var(--nav-pad), env(safe-area-inset-left));
+	padding-right: max(var(--nav-pad), env(safe-area-inset-right));
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
 	align-items: center;
-	gap: 24px;
+	column-gap: 24px;
 	transition:
 		padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
 		top 0.45s cubic-bezier(0.4, 0, 0.2, 1),
@@ -126,6 +130,9 @@ main {
 	backdrop-filter: blur(20px);
 	-webkit-backdrop-filter: blur(20px);
 	box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+	/* Prevents backdrop-filter / subpixel seams from peeking past the pill. */
+	overflow: hidden;
+	box-sizing: border-box;
 }
 
 [data-theme='light'] .nav.scrolled {
@@ -134,15 +141,17 @@ main {
 }
 
 .nav-logo {
+	grid-column: 1;
 	font-family: 'Syne', sans-serif;
 	font-size: 15px;
 	font-weight: 800;
 	letter-spacing: -0.02em;
-	flex-shrink: 0;
+	min-width: 0;
 }
 
 .nav-links {
-	flex: 1;
+	grid-column: 2;
+	min-width: 0;
 	display: flex;
 	justify-content: center;
 	flex-wrap: wrap;
@@ -181,12 +190,18 @@ main {
 	width: 100%;
 }
 
+/* Mobile drawer only — hidden in the horizontal desktop bar */
+.nav-drawer-head {
+	display: none;
+}
+
 .nav-right {
+	grid-column: 3;
 	display: flex;
 	align-items: center;
 	gap: 16px;
 	flex-shrink: 0;
-	margin-left: auto;
+	min-width: 0;
 }
 
 .theme-btn {
@@ -210,6 +225,30 @@ main {
 	background: var(--fg);
 	color: var(--bg);
 	border-color: var(--fg);
+}
+
+@media (max-width: 480px) {
+	/* Icon-only toggle — saves horizontal space next to search + burger. */
+	.theme-btn span:not(.t-icon) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
+	}
+
+	.theme-btn {
+		position: relative;
+		padding: 8px 11px;
+	}
+
+	.nav-right {
+		gap: 10px;
+	}
 }
 
 .nav-toggle {
@@ -240,13 +279,47 @@ main {
 	}
 
 	.nav {
-		padding: 18px var(--nav-pad);
-		flex-wrap: nowrap;
+		padding-top: max(18px, env(safe-area-inset-top));
+		padding-bottom: 18px;
+		padding-left: max(var(--nav-pad), env(safe-area-inset-left));
+		padding-right: max(var(--nav-pad), env(safe-area-inset-right));
+		grid-template-columns: 1fr auto auto 1fr;
+		column-gap: clamp(18px, 4.5vw, 28px);
+		row-gap: 0;
+		align-items: center;
+	}
+
+	.nav-logo {
+		grid-column: 2;
+		justify-self: end;
+		align-self: center;
+	}
+
+	.nav-right {
+		grid-column: 3;
+		justify-self: start;
+		align-self: center;
+		margin-left: 0;
 	}
 
 	.nav.scrolled {
-		left: 12px;
-		right: 12px;
+		/* Overrides `.nav.scrolled { padding: 14px 36px }` so safe-area + symmetric insets stay correct. */
+		left: max(14px, env(safe-area-inset-left));
+		right: max(14px, env(safe-area-inset-right));
+		padding-top: 14px;
+		padding-bottom: 14px;
+		padding-left: max(22px, calc(10px + env(safe-area-inset-left)));
+		padding-right: max(22px, calc(10px + env(safe-area-inset-right)));
+		/* `backdrop-filter` clips fixed descendants oddly on iOS/Android and leaves a gray seam at the pill edge. */
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+		background: rgba(12, 12, 11, 0.94);
+		box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+	}
+
+	[data-theme='light'] .nav.scrolled {
+		background: rgba(240, 237, 229, 0.96);
+		box-shadow: 0 4px 24px rgba(12, 12, 11, 0.12);
 	}
 
 	.nav-toggle {
@@ -254,23 +327,29 @@ main {
 	}
 
 	.nav-links {
+		grid-column: 1 / -1;
+		grid-row: 1;
+		justify-self: stretch;
+		align-self: stretch;
 		position: fixed;
 		top: 0;
 		right: 0;
 		bottom: 0;
 		width: min(300px, 86vw);
-		flex: none;
 		justify-content: flex-start;
 		margin: 0;
 		padding: 96px 28px 32px;
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 8px;
-		background: var(--bg2);
-		border-left: 1px solid var(--border);
+		/* Avoid bg2 peeking past the scrolled pill (`overflow` + `backdrop-filter` interaction). */
+		background: transparent;
+		border-left: none;
 		z-index: 160;
-		transform: translateX(100%);
+		/* Extra nudge so no bg2 “sliver” shows at the viewport edge when closed. */
+		transform: translateX(calc(100% + 6px));
 		transition: transform 0.45s var(--ease-out);
+		will-change: transform;
 	}
 
 	.nav-links li {
@@ -284,9 +363,13 @@ main {
 
 	.nav[data-open='true'] .nav-links {
 		transform: translateX(0);
+		background: var(--bg2);
+		border-left: 1px solid var(--border);
 	}
 
 	.nav-backdrop {
+		grid-column: 1 / -1;
+		grid-row: 1;
 		display: block;
 		position: fixed;
 		inset: 0;
@@ -301,6 +384,49 @@ main {
 		opacity: 1;
 		pointer-events: auto;
 	}
+
+	.nav-drawer-head {
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+		width: 100%;
+		list-style: none;
+		margin: -8px 0 16px;
+		padding-bottom: 16px;
+		border-bottom: 1px solid var(--border);
+		flex-shrink: 0;
+	}
+
+	.nav-drawer-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 44px;
+		height: 44px;
+		padding: 0;
+		color: var(--muted);
+		background: transparent;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		cursor: pointer;
+		transition:
+			color 0.25s var(--ease),
+			border-color 0.25s var(--ease),
+			background 0.25s var(--ease);
+	}
+
+	.nav-drawer-close:hover,
+	.nav-drawer-close:focus-visible {
+		color: var(--fg);
+		border-color: var(--border-hover);
+		outline: none;
+	}
+
+	.nav-drawer-close svg {
+		width: 18px;
+		height: 18px;
+		display: block;
+	}
 }
 
 /* ---------- Hero ---------- */
@@ -310,7 +436,8 @@ main {
 	display: flex;
 	flex-direction: column;
 	justify-content: flex-end;
-	padding: 0 var(--nav-pad) max(56px, calc(56px + env(safe-area-inset-bottom)));
+	padding: 0 max(var(--nav-pad), env(safe-area-inset-right)) max(56px, calc(56px + env(safe-area-inset-bottom)))
+		max(var(--nav-pad), env(safe-area-inset-left));
 	position: relative;
 }
 
@@ -341,8 +468,37 @@ main {
 	animation: rise 1s var(--ease-out) both;
 }
 
-.hero-title .line:nth-child(2) .line-inner {
+.hero-line-first .line-inner {
+	animation-delay: 0s;
+}
+
+.hero-line-last-full .line-inner {
 	animation-delay: 0.06s;
+}
+
+.hero-line-last-a .line-inner {
+	animation-delay: 0.06s;
+}
+
+.hero-line-last-b .line-inner {
+	animation-delay: 0.12s;
+}
+
+/* Split “Gold / Meyer” lines — must beat `.hero-title .line { display: block }`. */
+.hero-title .line.hero-line-last-a,
+.hero-title .line.hero-line-last-b {
+	display: none;
+}
+
+@media (max-width: 560px) {
+	.hero-title--split-last .hero-line-last-full {
+		display: none;
+	}
+
+	.hero-title--split-last .line.hero-line-last-a,
+	.hero-title--split-last .line.hero-line-last-b {
+		display: block;
+	}
 }
 
 @keyframes rise {
@@ -384,6 +540,12 @@ main {
 	animation: fadeIn 0.8s 0.45s var(--ease-out) both;
 }
 
+@media (max-width: 560px) {
+	.hero-pill-row {
+		justify-content: flex-start;
+	}
+}
+
 .skills-marquee {
 	width: 100vw;
 	max-width: 100vw;
@@ -394,6 +556,16 @@ main {
 	border-bottom: 1px solid var(--border);
 	padding: 14px 0;
 	box-sizing: border-box;
+}
+
+/* Full-bleed marquee uses 100vw, which often causes horizontal scroll on phones. */
+@media (max-width: 900px) {
+	.skills-marquee {
+		width: 100%;
+		max-width: 100%;
+		margin-left: 0;
+		margin-right: 0;
+	}
 }
 
 .skills-marquee-inner {
@@ -507,7 +679,7 @@ main {
 .scroll-hint {
 	position: absolute;
 	top: 110px;
-	right: var(--nav-pad);
+	right: max(var(--nav-pad), env(safe-area-inset-right));
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -552,7 +724,7 @@ main {
 /* ---------- Sections ---------- */
 
 .section {
-	padding: 96px var(--nav-pad) 120px;
+	padding: 96px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 .section-label {
@@ -575,7 +747,7 @@ main {
 /* ---------- Work section (layout & CSS cloned from dvdrod.com) ---------- */
 
 #work {
-	padding: 120px var(--nav-pad) 120px;
+	padding: 120px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 #work .s-header {
@@ -961,7 +1133,7 @@ main {
 /* ---------- Home: Recent Photos section ---------- */
 
 #photos {
-	padding: 120px var(--nav-pad) 120px;
+	padding: 120px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 #photos .s-header {
@@ -1007,7 +1179,7 @@ main {
 
 @media (max-width: 900px) {
 	#photos {
-		padding: 80px 24px 100px;
+		padding: 80px max(24px, env(safe-area-inset-right)) 100px max(24px, env(safe-area-inset-left));
 	}
 
 	#photos .s-header {
@@ -1130,6 +1302,18 @@ main {
 	flex-shrink: 0;
 }
 
+@media (max-width: 560px) {
+	.photo-home-body {
+		flex-direction: column;
+		align-items: flex-start;
+		row-gap: 8px;
+	}
+
+	.photo-home-date {
+		white-space: normal;
+	}
+}
+
 @media (prefers-reduced-motion: reduce) {
 	.photo-home-card:hover,
 	.photo-home-card:hover .photo-home-media img,
@@ -1140,7 +1324,7 @@ main {
 
 @media (max-width: 900px) {
 	#work {
-		padding: 80px 24px 100px;
+		padding: 80px max(24px, env(safe-area-inset-right)) 100px max(24px, env(safe-area-inset-left));
 	}
 
 	#work .s-header {
@@ -1361,6 +1545,19 @@ main {
 	white-space: nowrap;
 }
 
+@media (max-width: 560px) {
+	.timeline li {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.timeline li span:last-child {
+		white-space: normal;
+		text-align: left;
+	}
+}
+
 .skills {
 	display: flex;
 	flex-wrap: wrap;
@@ -1435,7 +1632,7 @@ main {
 /* ---------- Footer / CTA ---------- */
 
 .footer-cta {
-	padding: 120px var(--nav-pad);
+	padding: 120px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	border-top: 1px solid var(--border);
 }
 
@@ -1499,7 +1696,7 @@ main {
 }
 
 .site-footer {
-	padding: 40px var(--nav-pad);
+	padding: 40px max(var(--nav-pad), env(safe-area-inset-right)) 40px max(var(--nav-pad), env(safe-area-inset-left));
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
@@ -1513,7 +1710,7 @@ main {
 /* ---------- Blog ---------- */
 
 .blog-hero {
-	padding: 140px var(--nav-pad) 64px;
+	padding: 140px max(var(--nav-pad), env(safe-area-inset-right)) 64px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 .blog-hero h1 {
@@ -1533,7 +1730,7 @@ main {
 .post-list {
 	display: flex;
 	flex-direction: column;
-	padding: 0 var(--nav-pad) 120px;
+	padding: 0 max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 .post-row {
@@ -1638,7 +1835,7 @@ main {
 }
 
 .article-wrap {
-	padding: 140px var(--nav-pad) 120px;
+	padding: 140px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	max-width: 1120px;
 	margin: 0 auto;
 	display: grid;
@@ -2045,7 +2242,7 @@ b {
 /* ---------- Projects page: Recent + Pinned duo ---------- */
 
 .proj-duo {
-	padding: 0 var(--nav-pad) 80px;
+	padding: 0 max(var(--nav-pad), env(safe-area-inset-right)) 80px max(var(--nav-pad), env(safe-area-inset-left));
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 	gap: 32px 48px;
@@ -2236,12 +2433,21 @@ b {
 		grid-template-columns: 1fr;
 		gap: 14px;
 	}
+
+	.proj-card-head {
+		flex-wrap: wrap;
+		row-gap: 6px;
+	}
+
+	.proj-card-date {
+		white-space: normal;
+	}
 }
 
 /* ---------- Projects page: Topics section ---------- */
 
 .topics {
-	padding: 40px var(--nav-pad) 120px;
+	padding: 40px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	border-top: 1px solid var(--border);
 }
 
@@ -2271,6 +2477,8 @@ b {
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 16px;
+	flex-wrap: wrap;
+	row-gap: 8px;
 	margin-bottom: 20px;
 }
 
@@ -2292,6 +2500,12 @@ b {
 	display: grid;
 	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
 	gap: 16px;
+}
+
+@media (max-width: 560px) {
+	.topic-cards {
+		grid-template-columns: minmax(0, 1fr);
+	}
 }
 
 /* Stack topic cards vertically (image on top, body below) — the narrow
@@ -2318,11 +2532,11 @@ b {
 /* ---------- Photo index & article ---------- */
 
 .photo-index {
-	padding: 0 var(--nav-pad) 120px;
+	padding: 0 max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
 .photo-all {
-	padding: 40px var(--nav-pad) 120px;
+	padding: 40px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	border-top: 1px solid var(--border);
 }
 
@@ -2331,7 +2545,16 @@ b {
 	align-items: baseline;
 	justify-content: space-between;
 	gap: 16px;
+	flex-wrap: wrap;
 	margin-bottom: 24px;
+}
+
+@media (max-width: 560px) {
+	.photo-all-head {
+		flex-direction: column;
+		align-items: flex-start;
+		row-gap: 10px;
+	}
 }
 
 .proj-card-loc {
@@ -2394,7 +2617,7 @@ b {
 }
 
 .photo-article {
-	padding: 140px var(--nav-pad) 120px;
+	padding: 140px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	max-width: 1100px;
 	margin: 0 auto;
 }
@@ -2867,9 +3090,12 @@ html.search-open body {
 @media (max-width: 560px) {
 	.search {
 		padding-top: 6vh;
+		padding-left: max(0px, env(safe-area-inset-left));
+		padding-right: max(0px, env(safe-area-inset-right));
+		box-sizing: border-box;
 	}
 	.search-panel {
-		max-height: 88vh;
+		max-height: min(88vh, calc(100dvh - 12vh));
 	}
 	.search-foot {
 		display: none;
@@ -2895,7 +3121,7 @@ html.search-open body {
 	flex-direction: column;
 	justify-content: center;
 	align-items: flex-start;
-	padding: 140px var(--nav-pad) 120px;
+	padding: 140px max(var(--nav-pad), env(safe-area-inset-right)) 120px max(var(--nav-pad), env(safe-area-inset-left));
 	gap: 24px;
 }
 

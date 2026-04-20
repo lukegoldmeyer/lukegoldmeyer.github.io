@@ -4,8 +4,19 @@ import { site } from '../site';
 
 <nav class="nav" aria-label="Primary">
 	<a class="nav-logo" href="/">{site.name}</a>
-	<div class="nav-backdrop" aria-hidden="true"></div>
 	<ul class="nav-links">
+		<li class="nav-drawer-head">
+			<button type="button" class="nav-drawer-close" data-nav-close aria-label="Close menu">
+				<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+					<path
+						d="M6 6l12 12M18 6L6 18"
+						stroke="currentColor"
+						stroke-width="1.8"
+						stroke-linecap="round"
+					/>
+				</svg>
+			</button>
+		</li>
 		{
 			site.nav.map((item) => (
 				<li>
@@ -50,4 +61,5 @@ import { site } from '../site';
 			<span></span>
 		</button>
 	</div>
+	<div class="nav-backdrop" aria-hidden="true"></div>
 </nav>

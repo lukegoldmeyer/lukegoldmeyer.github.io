@@ -116,6 +116,11 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 							navToggle();
 							return;
 						}
+						if (t.closest('[data-nav-close]')) {
+							e.preventDefault();
+							navClose();
+							return;
+						}
 						if (t.closest('[data-search-toggle]')) {
 							e.preventDefault();
 							searchOpen();
