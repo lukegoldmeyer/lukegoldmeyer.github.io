@@ -31,11 +31,33 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 		<title>{pageTitle}</title>
 		<script is:inline>
 			(function () {
-				var s = localStorage.getItem('theme');
-				document.documentElement.setAttribute(
-					'data-theme',
-					s ? s : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
-				);
+				function resolveTheme() {
+					var s = localStorage.getItem('theme');
+					return s
+						? s
+						: window.matchMedia('(prefers-color-scheme: dark)').matches
+							? 'dark'
+							: 'light';
+				}
+
+				/* Apply on initial page load so the very first paint is already themed. */
+				document.documentElement.setAttribute('data-theme', resolveTheme());
+
+				/* During Astro's ClientRouter view transitions the incoming document's
+				 * <html> doesn't carry data-theme (it's SSR-rendered without one), and
+				 * attributes get copied from the new <html> during swap. Re-apply the
+				 * saved theme to the INCOMING doc before the swap so the rendered page
+				 * never flashes the wrong mode. */
+				document.addEventListener('astro:before-swap', function (e) {
+					if (e && e.newDocument && e.newDocument.documentElement) {
+						e.newDocument.documentElement.setAttribute('data-theme', resolveTheme());
+					}
+				});
+
+				/* Safety net: if anything else unsets the attribute, re-apply after swap. */
+				document.addEventListener('astro:after-swap', function () {
+					document.documentElement.setAttribute('data-theme', resolveTheme());
+				});
 			})();
 		</script>
 		<ClientRouter />
