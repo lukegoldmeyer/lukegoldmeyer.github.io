@@ -15,6 +15,7 @@ I don't want to rot indoors, so I like to get out. Cycling is my weapon of choic
 This site serves to present my work, in both project blogs and photography showcases. Please don't hesitate to send me a message in one of the places below.`,
 	location: 'Texas, USA',
 	email: 'goldmeyerluke@gmail.com',
+	phone: '972-837-9912',
 	instagram: 'https://instagram.com/lukegoldmeyer.arw',
 	linkedin: 'https://linkedin.com/in/lukegoldmeyer',
 	github: 'https://github.com/lukegoldmeyer',
