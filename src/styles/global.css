@@ -2886,3 +2886,82 @@ html.search-open body {
 		animation: none;
 	}
 }
+
+/* ---------- 404 ---------- */
+
+.notfound {
+	min-height: calc(100svh - 140px);
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: flex-start;
+	padding: 140px var(--nav-pad) 120px;
+	gap: 24px;
+}
+
+.notfound-eyebrow {
+	font-size: 11px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.notfound-code {
+	font-family: 'Syne', sans-serif;
+	font-size: clamp(120px, 22vw, 280px);
+	font-weight: 800;
+	line-height: 0.88;
+	letter-spacing: -0.06em;
+	color: var(--fg);
+	display: flex;
+	gap: 0.02em;
+}
+
+.notfound-code .line {
+	display: inline-block;
+	overflow: hidden;
+}
+
+.notfound-code .line-inner {
+	display: inline-block;
+	animation: rise 0.9s var(--ease-out) both;
+}
+
+.notfound-code .line:nth-child(2) .line-inner {
+	animation-delay: 0.08s;
+}
+
+.notfound-code .line:nth-child(3) .line-inner {
+	animation-delay: 0.16s;
+}
+
+.notfound-msg {
+	max-width: 44ch;
+	color: var(--muted);
+	font-size: 16px;
+	font-weight: 300;
+	line-height: 1.65;
+}
+
+.notfound-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 28px;
+	margin-top: 8px;
+}
+
+@media (max-width: 560px) {
+	.notfound {
+		padding: 100px 24px 80px;
+	}
+	.notfound-actions {
+		gap: 18px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.notfound-code .line-inner {
+		animation: none;
+	}
+}

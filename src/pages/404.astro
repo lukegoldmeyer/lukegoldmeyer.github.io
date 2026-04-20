@@ -1,0 +1,48 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site } from '../site';
+---
+
+<BaseLayout title={`404 — ${site.name}`} description="This page drifted off the map.">
+	<section class="notfound" aria-labelledby="notfound-title">
+		<p class="notfound-eyebrow">Page not found</p>
+		<h1 id="notfound-title" class="notfound-code">
+			<span class="line"><span class="line-inner">4</span></span>
+			<span class="line"><span class="line-inner">0</span></span>
+			<span class="line"><span class="line-inner">4</span></span>
+		</h1>
+		<p class="notfound-msg">
+			The page you're looking for doesn't exist, moved, or never did. Nothing personal.
+		</p>
+		<div class="notfound-actions">
+			<a class="section-cta" href="/" aria-label="Back to home">
+				<span class="section-cta-arrow section-cta-arrow--back" aria-hidden="true">
+					<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+						<path
+							d="M12 2L2 12M2 12H10M2 12V4"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						></path>
+					</svg>
+				</span>
+				<span class="section-cta-text">Back home</span>
+			</a>
+			<a class="section-cta" href="/projects" aria-label="Projects">
+				<span class="section-cta-text">Projects</span>
+				<span class="section-cta-arrow" aria-hidden="true">
+					<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+						<path
+							d="M2 12L12 2M12 2H4M12 2V10"
+							stroke="currentColor"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						></path>
+					</svg>
+				</span>
+			</a>
+		</div>
+	</section>
+</BaseLayout>
