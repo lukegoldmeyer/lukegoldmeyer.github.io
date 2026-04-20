@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies & build
-        uses: withastro/action@v3
+        uses: withastro/action@v6
         # Defaults are fine for this project — the action installs with npm using
         # package-lock.json and uses the Node version from package.json's `engines`.
         # Uncomment + adjust if you ever move the project into a subdirectory.
