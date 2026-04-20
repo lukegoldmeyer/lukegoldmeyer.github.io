@@ -1,0 +1,40 @@
+---
+/**
+ * Table of contents for MDX articles. Pass in the `headings` array from
+ * `await render(entry)` and this renders a jump-link list for h2 and h3 only.
+ *
+ *   const { Content, headings } = await render(project);
+ *   <Toc headings={headings} />
+ *
+ * Returns nothing when there are fewer than 2 eligible headings, so short
+ * posts don't get a pointless one-item TOC.
+ */
+interface Heading {
+	depth: number;
+	slug: string;
+	text: string;
+}
+interface Props {
+	headings: Heading[];
+	minDepth?: number;
+	maxDepth?: number;
+	label?: string;
+}
+
+const { headings, minDepth = 2, maxDepth = 3, label = 'On this page' } = Astro.props;
+const filtered = headings.filter((h) => h.depth >= minDepth && h.depth <= maxDepth);
+if (filtered.length < 2) return null;
+---
+
+<nav class="toc" aria-label={label}>
+	<p class="toc-label">{label}</p>
+	<ol class="toc-list">
+		{
+			filtered.map((h) => (
+				<li class:list={['toc-item', `toc-d${h.depth}`]}>
+					<a href={`#${h.slug}`}>{h.text}</a>
+				</li>
+			))
+		}
+	</ol>
+</nav>

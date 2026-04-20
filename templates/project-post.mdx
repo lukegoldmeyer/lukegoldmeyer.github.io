@@ -1,0 +1,220 @@
+---
+# =============================================================================
+# PROJECT POST TEMPLATE
+#
+# Copy this whole file to:  src/content/projects/<slug>/index.mdx
+# The folder name becomes the URL:  /projects/<slug>/
+# Drop any images you want to use into the same folder beside index.mdx.
+#
+# --- Frontmatter rules ---
+# * Only `title` is strictly required. Everything else is optional.
+# * Don't leave blank lines between fields (some YAML parsers treat them as
+#   end-of-block and the MDX will fail to render).
+# * Delete every `#`-prefixed comment line when you're done; they're harmless,
+#   they just clutter the file.
+# =============================================================================
+
+# ── REQUIRED ────────────────────────────────────────────────────────────────
+title: 'My Project Title'
+
+# ── OPTIONAL STRINGS ────────────────────────────────────────────────────────
+
+# One- or two-line summary used on cards and as the <p class="lead"> below H1.
+description: 'Short summary, under ~160 chars reads best on cards.'
+
+# ── DATES ───────────────────────────────────────────────────────────────────
+# Format: YYYY-MM-DD. Recency sort uses max(pubDate, updatedDate).
+
+pubDate: 2026-04-16
+updatedDate: 2026-04-20
+
+# ── TAGS ────────────────────────────────────────────────────────────────────
+# Drive the "Topics" section on /projects. Case-insensitive for ordering.
+# Tag section order: see `tagOrder` in src/site.ts.
+# Tags listed in `site.hiddenTopics` will NOT produce a Topics section.
+
+tags: ['Engineering', 'CAD', '3D Printing']
+
+# ── COVER IMAGE ─────────────────────────────────────────────────────────────
+# Relative path from this .mdx. Accepted: svg, webp, png, jpg, jpeg, gif, avif.
+# Omit this and delete any `thumbnail.*` file in the folder to render the
+# gradient placeholder instead.
+
+thumbnail: ./thumbnail.jpg
+
+# ── FLAGS ───────────────────────────────────────────────────────────────────
+
+# `wip: true` — home card is non-clickable and shows a "Work in progress" badge.
+wip: false
+
+# `pin: true` — shows in the "Pinned" column on /projects + adds a pin icon on every card.
+pin: false
+---
+
+{/* Everything below the closing --- is the article body. MDX = Markdown + JSX.
+     Comments like this one using {/* ... *\/} render as nothing. */}
+
+{/* Optional: import Astro's Image component for optimized images, or any other
+     module. Imports must live at the top of the body, before any content. */}
+import { Image } from 'astro:assets'
+import cover from './thumbnail.jpg'
+
+## Headings
+
+`h2` and `h3` headings auto-generate a jump-link entry in the right-hand Table
+of Contents (desktop) or the inline TOC (mobile). Posts with fewer than 2
+headings skip the TOC entirely.
+
+### Sub-headings
+
+`h3` entries are indented in the TOC.
+
+#### h4, h5, h6
+
+Still render but do not appear in the TOC.
+
+## Text formatting
+
+Paragraph text is light-weight Inter in a muted tone, optimized for long-form
+reading at ~17px with 1.75 line-height.
+
+Regular text, **bold text**, _italic text_, **_bold italic_**, ~~strikethrough~~,
+and `inline code` all render with good contrast. Links are colored and
+underlined: [dvdrod.com](https://dvdrod.com) (the design reference for this site)
+or an internal link like [the projects page](/projects).
+
+## Lists
+
+Unordered list:
+
+- First bullet
+- Second bullet with **bold**
+  - Nested bullet
+  - Another nested bullet
+- Third bullet
+
+Ordered list:
+
+1. First numbered item
+2. Second numbered item
+   1. Nested ordered item
+   2. Another one
+3. Third numbered item
+
+Task list (GFM):
+
+- [x] Something done
+- [ ] Something pending
+- [ ] Another pending item
+
+## Code blocks
+
+Inline: `console.log('hello')`.
+
+Fenced code block with a language hint gets Shiki syntax highlighting:
+
+```ts
+function greet(name: string): string {
+  const timestamp = new Date().toISOString();
+  return `[${timestamp}] Hello, ${name}!`;
+}
+
+greet('Luke');
+```
+
+```python
+import numpy as np
+
+def kinetic_energy(mass: float, v: float) -> float:
+    return 0.5 * mass * v ** 2
+```
+
+```bash
+npm install
+npm run dev
+```
+
+Language-less fence:
+
+```
+No highlighting, just monospace text.
+```
+
+## Blockquotes
+
+> A short quote renders with an orange left border and slight italicization.
+
+> Multi-paragraph quotes work too.
+>
+> Just keep the `>` prefix on blank lines between paragraphs.
+
+## Horizontal rule
+
+Use three or more hyphens on their own line:
+
+---
+
+## Images
+
+**Plain markdown** (passes through uncompressed, straight from the folder):
+
+![Alt text describing the image for screen readers](./thumbnail.jpg)
+
+**Astro `<Image />`** (recommended for optimized / resized images):
+
+<Image src={cover} alt="Optimized cover image" width={1200} />
+
+You can also import-and-use any image without a frontmatter declaration:
+
+{/* import extra from './extra-shot.jpg' */}
+{/* <Image src={extra} alt="..." /> */}
+
+## Tables (GFM)
+
+| Field       | Type   | Required | Notes                              |
+| ----------- | ------ | -------- | ---------------------------------- |
+| `title`     | string | yes      | Appears as the H1 on the post page |
+| `pubDate`   | date   | no       | Sorts newest-first everywhere      |
+| `pin`       | bool   | no       | Featured in the Pinned column      |
+
+Alignment is controlled by the position of the `:` in the separator row:
+
+| Left         | Center        | Right        |
+| :----------- | :-----------: | -----------: |
+| `left`       | `center`      | `right`      |
+
+## Footnotes (GFM)
+
+You can reference a footnote like this[^ref1], and Astro will render a linked
+definition at the bottom of the page.
+
+[^ref1]: This is the footnote body. Markdown works inside it.
+
+## Autolinks
+
+Bare URLs are linkified automatically: https://astro.build/.
+
+## Escaping
+
+Backslash-escape any character that would otherwise be interpreted: \*not italic\*,
+\`not code\`, \[not a link\](noop).
+
+## MDX components
+
+Because this is MDX rather than plain Markdown, you can import any Astro or
+framework component and use it inline. For example:
+
+{/* import Pin from '../../../components/Pin.astro' */}
+{/* <Pin pinned={true} /> */}
+
+The current site doesn't ship with many public components, but if one is ever
+added (e.g. a callout box, a gallery, an embedded figure) you can drop it in
+anywhere in the body and it'll render.
+
+## Tips
+
+- **Folder name = URL slug.** Stick to lowercase, digits, and hyphens.
+- **Asset paths are relative to this file.** `./foo.jpg` resolves inside your
+  post folder.
+- **HMR is fragile around folder renames / deletes.** If something looks wrong
+  after reshuffling posts, stop the dev server, delete `.astro/`, and restart.

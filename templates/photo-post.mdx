@@ -1,0 +1,177 @@
+---
+# =============================================================================
+# PHOTO POST TEMPLATE
+#
+# Copy this whole file to:  src/content/photos/<slug>/index.mdx
+# The folder name becomes the URL:  /photo/<slug>/
+# Drop all photo files you want into that same folder, then list them in
+# `images` below in the order you want them to render.
+#
+# --- Frontmatter rules ---
+# * Only `title` is strictly required.
+# * No blank lines between fields — YAML parsers treat them as end-of-block.
+# * Delete every `#`-prefixed comment line once you're done.
+# =============================================================================
+
+# ── REQUIRED ────────────────────────────────────────────────────────────────
+title: 'Golden Hour'
+
+# ── OPTIONAL STRINGS ────────────────────────────────────────────────────────
+
+# Short summary shown on tiles and as the lead paragraph on the detail page.
+description: 'Late-light bike ride through the hill country.'
+
+# Small eyebrow line above the title on the detail page.
+location: 'Texas Hill Country, TX'
+
+# ── DATES ───────────────────────────────────────────────────────────────────
+# Format: YYYY-MM-DD. Recency sort uses max(pubDate, updatedDate).
+
+pubDate: 2026-04-10
+updatedDate: 2026-04-12
+
+# ── TAGS ────────────────────────────────────────────────────────────────────
+# Freeform, not currently used to group photo posts but kept for future-proofing.
+
+tags: ['Cycling', 'Landscape']
+
+# ── COVER IMAGE ─────────────────────────────────────────────────────────────
+# Relative path from this .mdx. If omitted, the first image in `images[]` is
+# used as the /photo index tile cover.
+
+cover: ./01-wide.jpg
+
+# ── FLAGS ───────────────────────────────────────────────────────────────────
+
+# `pin: true` — shows in the "Featured" column on /photo + adds a pin icon.
+pin: false
+
+# ── GALLERY ─────────────────────────────────────────────────────────────────
+# Ordered list of photos. Render order = list order.
+# Each entry is either:
+#   - a bare relative path, e.g. `- ./frame.jpg`
+#   - an object with optional alt text (preferred for accessibility):
+#       - src: ./frame.jpg
+#         alt: 'A short description for screen readers.'
+#
+# Rendering on the post page:
+#   0 images + cover set  → cover shown as a single hero
+#   1 image               → single hero, full width
+#   2+ images             → 2-wide CSS masonry grid, collapses to 1-wide on
+#                           narrow screens, images in list order
+
+images:
+  - src: ./01-wide.jpg
+    alt: 'A wide shot of a dirt road cutting through yellow grass at sunset.'
+  - src: ./02-portrait.jpg
+    alt: 'Rider silhouette against the sky.'
+  - ./03-detail.jpg
+  - ./04-detail.jpg
+---
+
+{/* Everything below the closing --- is the article body. MDX = Markdown + JSX.
+     Body text is optional for photo posts — a pure gallery is totally fine. */}
+
+import { Image } from 'astro:assets'
+
+Optional body copy: a short paragraph of context, shot notes, gear used, or
+location details. Body renders under the gallery inside the centered `.prose`
+container.
+
+## Headings auto-build a TOC
+
+`h2` and `h3` headings populate the inline Table of Contents that sits above
+the prose on photo articles.
+
+## Text formatting
+
+Same long-form styles as project posts: **bold**, _italic_, **_bold italic_**,
+~~strikethrough~~, `inline code`. Links render in the accent color with an
+underline: [Instagram](https://instagram.com/lukegoldmeyer.arw).
+
+## Lists
+
+Unordered:
+
+- Body at f/1.8
+- Shutter 1/200
+- ISO 400
+
+Ordered:
+
+1. Arrive 20 minutes before golden hour
+2. Scout ~three angles before the light drops
+3. Shoot wide first, then portraits
+
+Task list:
+
+- [x] Battery fully charged
+- [x] Two lens cloths
+- [ ] Remote shutter
+
+## Quote
+
+> Keep a setup list. The things you forget are always the things that would have
+> made the best photo.
+
+## Horizontal rule
+
+---
+
+## Code block (if you ever need one in a photo post)
+
+```yaml
+exif:
+  camera: Sony α7 IV
+  lens: 24-70mm f/2.8 GM II
+  aperture: f/4
+  shutter: 1/320
+  iso: 200
+```
+
+## Images inline (optional — the main gallery comes from `images[]`)
+
+You rarely need to inline images in the body since the gallery renders them for
+you from the frontmatter. But if you ever want to drop a single photo inline
+between paragraphs:
+
+**Plain markdown (uncompressed pass-through):**
+
+![A wide shot](./01-wide.jpg)
+
+**Optimized Astro `<Image />`:**
+
+<Image src={import('./01-wide.jpg')} alt="A wide shot" width={1200} />
+
+## Tables (GFM)
+
+| Shot | Lens        | Aperture | Notes              |
+| :--- | :---------- | :------: | :----------------- |
+| 01   | 24mm        |   f/4    | Wide establishing  |
+| 02   | 50mm        |  f/1.8   | Portrait           |
+| 03   | 85mm        |  f/2.8   | Detail             |
+
+## Footnotes (GFM)
+
+Write what you want about the set[^notes] and the footnote will link to a
+definition at the bottom of the page.
+
+[^notes]: I process everything in Lightroom; color grading is mostly tone-curve work.
+
+## Autolinks
+
+Bare URLs work: https://astro.build/.
+
+## Escaping
+
+Backslashes escape markdown punctuation: \*not italic\*, \[not a link\](noop).
+
+## Tips
+
+- **Folder name = URL slug.** Lowercase, digits, hyphens.
+- **Two-wide masonry** kicks in automatically when `images[]` has 2 or more
+  entries. Put them in the order you want them to appear.
+- **Each entry can have an `alt`** — always include it for posts that get
+  shared around for accessibility reasons.
+- If you want a pure gallery post with no prose, just delete everything below
+  the closing `---`.

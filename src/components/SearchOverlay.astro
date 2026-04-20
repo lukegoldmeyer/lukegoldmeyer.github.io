@@ -1,0 +1,54 @@
+---
+/**
+ * Full-screen search dialog. Hidden by default; opened via any element with
+ * `[data-search-toggle]` (e.g. the nav search button) or Ctrl/Cmd+K.
+ *
+ * - Index is loaded lazily from /search.json the first time you open the dialog.
+ * - Client-side matcher: every token must hit title/tags/description (AND).
+ * - Keyboard nav: ↑↓ move selection, ↵ open, Esc close.
+ */
+---
+
+<div class="search" data-search hidden>
+	<div class="search-backdrop" data-search-close aria-hidden="true"></div>
+	<div
+		class="search-panel"
+		role="dialog"
+		aria-modal="true"
+		aria-label="Search projects and photos"
+	>
+		<form class="search-form" role="search" onsubmit="return false;">
+			<svg class="search-form-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"></circle>
+				<line
+					x1="16.2"
+					y1="16.2"
+					x2="21"
+					y2="21"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+				></line>
+			</svg>
+			<input
+				type="search"
+				class="search-input"
+				data-search-input
+				placeholder="Search projects, photos, tags…"
+				autocomplete="off"
+				autocorrect="off"
+				autocapitalize="off"
+				spellcheck="false"
+			/>
+			<button type="button" class="search-kbd" data-search-close aria-label="Close">Esc</button>
+		</form>
+		<div class="search-results" data-search-results role="listbox" aria-label="Search results">
+			<p class="search-hint" data-search-hint>Type to search posts and photos.</p>
+		</div>
+		<div class="search-foot" aria-hidden="true">
+			<span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+			<span><kbd>↵</kbd> open</span>
+			<span><kbd>Esc</kbd> close</span>
+		</div>
+	</div>
+</div>

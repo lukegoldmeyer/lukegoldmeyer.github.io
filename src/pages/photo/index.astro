@@ -1,0 +1,186 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../../site';
+import { resolvePhotoCover } from '../../utils/photo-assets';
+import { sortProjectsByRecency } from '../../utils/sort-projects';
+import Pin from '../../components/Pin.astro';
+
+const all = sortProjectsByRecency(await getCollection('photos'));
+const recent = all.slice(0, 3);
+const featured = all.filter((p) => p.data.pin === true).slice(0, 3);
+
+function formatDate(d: Date | undefined) {
+	if (!d) return '—';
+	return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+---
+
+<BaseLayout title={`Photo — ${site.name}`} description={site.photoIntro}>
+	<header class="blog-hero">
+		<p class="section-label">{site.photoIntro}</p>
+		<h1>Photo</h1>
+		<p>Selected photography. Sets and single frames.</p>
+	</header>
+
+	{
+		all.length === 0 ? (
+			<div class="photo-index">
+				<p class="work-empty">
+					No photo posts yet. Add a folder under{' '}
+					<code class="work-empty-code">src/content/photos/&lt;slug&gt;/</code> with{' '}
+					<code class="work-empty-code">index.md</code> or <code class="work-empty-code">index.mdx</code> and
+					image files beside it.
+				</p>
+			</div>
+		) : (
+			<>
+				<section class="proj-duo" aria-label="Recent and featured photos" data-reveal>
+					<div class="proj-duo-col">
+						<h2 class="proj-duo-title">Recent</h2>
+						<div class="proj-cards">
+							{recent.map((post) => {
+								const cover = resolvePhotoCover(post.id, post.data.cover);
+								const hasCover = !!cover;
+								return (
+									<a
+										class:list={[
+											'proj-card',
+											'proj-card--photo',
+											!hasCover && 'proj-card--no-thumb',
+										]}
+										href={`/photo/${post.id}/`}
+									>
+										{hasCover ? (
+											<div class="proj-card-media">
+												<img
+													src={cover.src}
+													alt={`${post.data.title} — cover`}
+													width={cover.width}
+													height={cover.height}
+													loading="lazy"
+													decoding="async"
+												/>
+											</div>
+										) : null}
+										<div class="proj-card-body">
+											<div class="proj-card-head">
+												<h3>
+													{post.data.title}
+													<Pin pinned={post.data.pin === true} />
+												</h3>
+												<time
+													class="proj-card-date"
+													datetime={post.data.pubDate?.toISOString()}
+												>
+													{formatDate(post.data.pubDate)}
+												</time>
+											</div>
+											{post.data.description ? (
+												<p class="proj-card-desc">{post.data.description}</p>
+											) : null}
+											{post.data.location ? (
+												<p class="proj-card-loc">{post.data.location}</p>
+											) : null}
+										</div>
+									</a>
+								);
+							})}
+						</div>
+					</div>
+
+					<div class="proj-duo-col">
+						<h2 class="proj-duo-title">Featured</h2>
+						{featured.length === 0 ? (
+							<p class="proj-duo-empty">
+								No featured photos yet. Set <code class="work-empty-code">pin: true</code> in a
+								photo post's frontmatter to feature it here.
+							</p>
+						) : (
+							<div class="proj-cards">
+								{featured.map((post) => {
+									const cover = resolvePhotoCover(post.id, post.data.cover);
+									const hasCover = !!cover;
+									return (
+										<a
+											class:list={[
+												'proj-card',
+												'proj-card--photo',
+												!hasCover && 'proj-card--no-thumb',
+											]}
+											href={`/photo/${post.id}/`}
+										>
+											{hasCover ? (
+												<div class="proj-card-media">
+													<img
+														src={cover.src}
+														alt={`${post.data.title} — cover`}
+														width={cover.width}
+														height={cover.height}
+														loading="lazy"
+														decoding="async"
+													/>
+												</div>
+											) : null}
+											<div class="proj-card-body">
+												<div class="proj-card-head">
+													<h3>
+														{post.data.title}
+														<Pin pinned={post.data.pin === true} />
+													</h3>
+													<time
+														class="proj-card-date"
+														datetime={post.data.pubDate?.toISOString()}
+													>
+														{formatDate(post.data.pubDate)}
+													</time>
+												</div>
+												{post.data.description ? (
+													<p class="proj-card-desc">{post.data.description}</p>
+												) : null}
+												{post.data.location ? (
+													<p class="proj-card-loc">{post.data.location}</p>
+												) : null}
+											</div>
+										</a>
+									);
+								})}
+							</div>
+						)}
+					</div>
+				</section>
+
+				<section class="photo-all" aria-label="All photos" data-reveal>
+					<header class="photo-all-head">
+						<h2 class="proj-duo-title">All Photos</h2>
+						<span class="topic-count">
+							{all.length} post{all.length === 1 ? '' : 's'}
+						</span>
+					</header>
+					<div class="photo-all-masonry">
+						{all.map((post) => {
+							const cover = resolvePhotoCover(post.id, post.data.cover);
+							if (!cover) return null;
+							return (
+								<a
+									class="photo-all-tile"
+									href={`/photo/${post.id}/`}
+									aria-label={post.data.title}
+								>
+									<img
+										src={cover.src}
+										alt={post.data.title}
+										width={cover.width}
+										height={cover.height}
+										loading="lazy"
+										decoding="async"
+									/>
+								</a>
+							);
+						})}
+					</div>
+				</section>
+			</>
+		)
+	}
+</BaseLayout>

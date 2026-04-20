@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675" role="img" aria-label="Formatting showcase placeholder">
+	<defs>
+		<linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#1a0a00" />
+			<stop offset="0.55" stop-color="#4a2000" />
+			<stop offset="1" stop-color="#cc5500" />
+		</linearGradient>
+		<pattern id="grid" width="60" height="60" patternUnits="userSpaceOnUse">
+			<path d="M 60 0 L 0 0 0 60" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1" />
+		</pattern>
+	</defs>
+	<rect width="1200" height="675" fill="url(#g)" />
+	<rect width="1200" height="675" fill="url(#grid)" />
+	<text x="600" y="345" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="62" font-weight="800" fill="#ffffff" opacity="0.95" letter-spacing="-2">Formatting Showcase</text>
+	<text x="600" y="395" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="400" fill="#ffffff" opacity="0.65">Every markdown + MDX feature you can use on a project post</text>
+</svg>

@@ -1,0 +1,53 @@
+---
+import { site } from '../site';
+---
+
+<nav class="nav" aria-label="Primary">
+	<a class="nav-logo" href="/">{site.name}</a>
+	<div class="nav-backdrop" aria-hidden="true"></div>
+	<ul class="nav-links">
+		{
+			site.nav.map((item) => (
+				<li>
+					<a href={item.href}>{item.label}</a>
+				</li>
+			))
+		}
+	</ul>
+	<div class="nav-right">
+		<button
+			type="button"
+			class="search-btn"
+			data-search-toggle
+			aria-label="Search"
+			title="Search — Ctrl+K"
+		>
+			<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+				<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.8"></circle>
+				<line
+					x1="16.2"
+					y1="16.2"
+					x2="21"
+					y2="21"
+					stroke="currentColor"
+					stroke-width="1.8"
+					stroke-linecap="round"
+				></line>
+			</svg>
+		</button>
+		<button type="button" class="theme-btn" data-theme-toggle aria-label="Toggle light or dark theme">
+			<span class="t-icon" aria-hidden="true">◐</span>
+			<span>Theme</span>
+		</button>
+		<button
+			type="button"
+			class="nav-toggle"
+			data-nav-toggle
+			aria-expanded="false"
+			aria-label="Open menu"
+		>
+			<span></span>
+			<span></span>
+		</button>
+	</div>
+</nav>

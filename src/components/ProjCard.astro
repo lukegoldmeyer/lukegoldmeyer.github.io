@@ -1,0 +1,63 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { resolveProjectThumbnail } from '../utils/project-thumbnails';
+import Pin from './Pin.astro';
+
+interface Props {
+	project: CollectionEntry<'projects'>;
+	showTags?: boolean;
+	maxTags?: number;
+}
+
+const { project, showTags = true, maxTags = 4 } = Astro.props;
+const thumb = resolveProjectThumbnail(project.id, project.data.thumbnail);
+const hasThumb = !!thumb;
+const pinned = project.data.pin === true;
+const tags = project.data.tags ?? [];
+
+function formatDate(d: Date | undefined) {
+	if (!d) return '—';
+	return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+---
+
+<a
+	class:list={['proj-card', !hasThumb && 'proj-card--no-thumb']}
+	href={`/projects/${project.id}/`}
+>
+	{
+		hasThumb ? (
+			<div class="proj-card-media">
+				<img
+					src={thumb.src}
+					alt={`${project.data.title} — thumbnail`}
+					width={thumb.width}
+					height={thumb.height}
+					loading="lazy"
+					decoding="async"
+				/>
+			</div>
+		) : null
+	}
+	<div class="proj-card-body">
+		<div class="proj-card-head">
+			<h3>
+				{project.data.title}
+				<Pin pinned={pinned} />
+			</h3>
+			<time class="proj-card-date" datetime={project.data.pubDate?.toISOString()}>
+				{formatDate(project.data.pubDate)}
+			</time>
+		</div>
+		{project.data.description ? <p class="proj-card-desc">{project.data.description}</p> : null}
+		{
+			showTags && tags.length > 0 ? (
+				<div class="proj-card-tags">
+					{tags.slice(0, maxTags).map((t) => (
+						<span class="tag">{t}</span>
+					))}
+				</div>
+			) : null
+		}
+	</div>
+</a>

@@ -1,0 +1,595 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import SearchOverlay from '../components/SearchOverlay.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'Personal portfolio and writing.' } = Astro.props;
+const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+		<meta name="description" content={description} />
+		<meta name="generator" content={Astro.generator} />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&display=swap"
+			rel="stylesheet"
+		/>
+		<title>{pageTitle}</title>
+		<script is:inline>
+			(function () {
+				var s = localStorage.getItem('theme');
+				document.documentElement.setAttribute(
+					'data-theme',
+					s ? s : window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+				);
+			})();
+		</script>
+		<ClientRouter />
+	</head>
+	<body>
+		<div class="page">
+			<Nav />
+			<main>
+				<slot />
+			</main>
+			<Footer />
+		</div>
+		<SearchOverlay />
+		<script is:inline>
+			(function () {
+				function themeToggle() {
+					var root = document.documentElement;
+					var next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+					root.setAttribute('data-theme', next);
+					localStorage.setItem('theme', next);
+				}
+
+				function navClose() {
+					var nav = document.querySelector('.nav');
+					var toggle = document.querySelector('[data-nav-toggle]');
+					if (!nav) return;
+					nav.removeAttribute('data-open');
+					if (toggle) toggle.setAttribute('aria-expanded', 'false');
+				}
+
+				function navToggle() {
+					var nav = document.querySelector('.nav');
+					var toggle = document.querySelector('[data-nav-toggle]');
+					if (!nav || !toggle) return;
+					if (nav.getAttribute('data-open') === 'true') {
+						nav.removeAttribute('data-open');
+						toggle.setAttribute('aria-expanded', 'false');
+					} else {
+						nav.setAttribute('data-open', 'true');
+						toggle.setAttribute('aria-expanded', 'true');
+					}
+				}
+
+				document.addEventListener(
+					'click',
+					function (e) {
+						var t = e.target;
+						if (!(t instanceof Element)) return;
+						if (t.closest('[data-theme-toggle]')) {
+							e.preventDefault();
+							themeToggle();
+							return;
+						}
+						if (t.closest('[data-nav-toggle]')) {
+							e.preventDefault();
+							navToggle();
+							return;
+						}
+						if (t.closest('[data-search-toggle]')) {
+							e.preventDefault();
+							searchOpen();
+							return;
+						}
+						if (t.closest('[data-search-close]')) {
+							e.preventDefault();
+							searchClose();
+							return;
+						}
+						if (t.closest('.search-result')) {
+							/* Let the link navigate; close dialog after the click bubbles. */
+							setTimeout(searchClose, 0);
+							return;
+						}
+						var copyBtn = t.closest('.codeblock-copy');
+						if (copyBtn) {
+							e.preventDefault();
+							copyCodeBlock(copyBtn);
+							return;
+						}
+						if (t.closest('.nav-backdrop')) {
+							navClose();
+							return;
+						}
+						if (t.closest('.nav-links a')) {
+							navClose();
+						}
+					},
+					true,
+				);
+
+				/* ---- Search palette ---- */
+				var searchItems = null;
+				var searchLoading = null;
+				var searchDebounce = null;
+
+				function searchEls() {
+					return {
+						wrap: document.querySelector('[data-search]'),
+						input: document.querySelector('[data-search-input]'),
+						results: document.querySelector('[data-search-results]'),
+						hint: document.querySelector('[data-search-hint]'),
+					};
+				}
+
+				function searchOpen() {
+					var els = searchEls();
+					if (!els.wrap || !els.input) return;
+					els.wrap.removeAttribute('hidden');
+					document.documentElement.classList.add('search-open');
+					requestAnimationFrame(function () {
+						els.input.focus();
+						els.input.select();
+					});
+					searchLoad();
+				}
+
+				function searchClose() {
+					var els = searchEls();
+					if (!els.wrap) return;
+					els.wrap.setAttribute('hidden', '');
+					document.documentElement.classList.remove('search-open');
+					if (els.input) els.input.value = '';
+					if (els.results)
+						els.results.innerHTML =
+							'<p class="search-hint" data-search-hint>Type to search posts and photos.</p>';
+				}
+
+				function searchLoad() {
+					if (searchItems || searchLoading) return searchLoading || Promise.resolve();
+					searchLoading = fetch('/search.json')
+						.then(function (r) {
+							return r.ok ? r.json() : { items: [] };
+						})
+						.then(function (j) {
+							searchItems = (j && j.items) || [];
+						})
+						.catch(function () {
+							searchItems = [];
+						});
+					return searchLoading;
+				}
+
+				function searchEscape(s) {
+					return String(s).replace(/[&<>"']/g, function (c) {
+						return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+					});
+				}
+
+				function searchScore(item, tokens) {
+					var title = (item.title || '').toLowerCase();
+					var desc = (item.description || '').toLowerCase();
+					var body = (item.body || '').toLowerCase();
+					var tags = (item.tags || []).map(function (x) {
+						return x.toLowerCase();
+					});
+					var total = 0;
+					var matchedInBody = false;
+					for (var i = 0; i < tokens.length; i++) {
+						var t = tokens[i];
+						var hit = 0;
+						if (title.indexOf(t) !== -1) hit += title.indexOf(t) === 0 ? 12 : 7;
+						for (var j = 0; j < tags.length; j++) {
+							if (tags[j].indexOf(t) !== -1) {
+								hit += 5;
+								break;
+							}
+						}
+						if (desc.indexOf(t) !== -1) hit += 2;
+						if (body.indexOf(t) !== -1) {
+							hit += 1;
+							matchedInBody = true;
+						}
+						if (hit === 0) return 0; /* every token must match somewhere */
+						total += hit;
+					}
+					if (item.pinned) total += 0.5;
+					return { score: total, bodyMatch: matchedInBody };
+				}
+
+				/* Build a ~120-char snippet around the first body hit, with all matching
+				 * tokens wrapped in <mark>. Returns '' if no match. */
+				function searchSnippet(body, tokens) {
+					if (!body) return '';
+					var lower = body.toLowerCase();
+					var firstHit = -1;
+					for (var i = 0; i < tokens.length; i++) {
+						var idx = lower.indexOf(tokens[i]);
+						if (idx !== -1 && (firstHit === -1 || idx < firstHit)) firstHit = idx;
+					}
+					if (firstHit === -1) return '';
+					var ctxBefore = 50;
+					var ctxAfter = 90;
+					var start = Math.max(0, firstHit - ctxBefore);
+					var end = Math.min(body.length, firstHit + ctxAfter);
+					/* Trim to word boundaries so we don't chop mid-word */
+					while (start > 0 && body[start - 1] !== ' ' && firstHit - start < ctxBefore + 20) start--;
+					while (end < body.length && body[end] !== ' ' && end - firstHit < ctxAfter + 20) end++;
+					var slice = body.slice(start, end);
+					var prefix = start > 0 ? '… ' : '';
+					var suffix = end < body.length ? ' …' : '';
+					var escaped = searchEscape(slice);
+					/* Highlight each token (case-insensitive) */
+					for (var k = 0; k < tokens.length; k++) {
+						var re = new RegExp(
+							'(' + tokens[k].replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ')',
+							'gi',
+						);
+						escaped = escaped.replace(re, '<mark>$1</mark>');
+					}
+					return prefix + escaped + suffix;
+				}
+
+				function searchRender(qStr) {
+					var els = searchEls();
+					if (!els.results) return;
+					var tokens = qStr
+						.toLowerCase()
+						.trim()
+						.split(/\s+/)
+						.filter(Boolean);
+					if (!tokens.length) {
+						els.results.innerHTML =
+							'<p class="search-hint" data-search-hint>Type to search posts and photos.</p>';
+						return;
+					}
+					if (!searchItems) {
+						els.results.innerHTML = '<p class="search-hint" data-search-hint>Loading…</p>';
+						return;
+					}
+					var scored = [];
+					for (var i = 0; i < searchItems.length; i++) {
+						var s = searchScore(searchItems[i], tokens);
+						if (s && s.score > 0) scored.push([s.score, searchItems[i], s.bodyMatch]);
+					}
+					scored.sort(function (a, b) {
+						return b[0] - a[0];
+					});
+					scored = scored.slice(0, 20);
+					if (!scored.length) {
+						els.results.innerHTML =
+							'<p class="search-hint" data-search-hint>No results. Try a shorter query.</p>';
+						return;
+					}
+					var html = '<ul class="search-list" role="list">';
+					for (var k = 0; k < scored.length; k++) {
+						var it = scored[k][1];
+						var bodyHit = scored[k][2];
+						var snippet = bodyHit ? searchSnippet(it.body || '', tokens) : '';
+						var tagsHtml = '';
+						if (it.tags && it.tags.length) {
+							tagsHtml =
+								'<span class="search-result-tags">' +
+								it.tags
+									.slice(0, 3)
+									.map(function (t) {
+										return '<span class="tag">' + searchEscape(t) + '</span>';
+									})
+									.join('') +
+								'</span>';
+						}
+						html +=
+							'<li><a href="' +
+							it.url +
+							'" class="search-result" data-idx="' +
+							k +
+							'">' +
+							'<span class="search-result-type">' +
+							searchEscape(it.type) +
+							'</span>' +
+							'<span class="search-result-title">' +
+							searchEscape(it.title) +
+							(it.pinned
+								? ' <svg class="search-result-pin" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Pinned"><line x1="12" x2="12" y1="17" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>'
+								: '') +
+							'</span>' +
+							(it.description
+								? '<span class="search-result-desc">' +
+									searchEscape(it.description) +
+									'</span>'
+								: '') +
+							(snippet
+								? '<span class="search-result-snippet">' + snippet + '</span>'
+								: '') +
+							tagsHtml +
+							'</a></li>';
+					}
+					html += '</ul>';
+					els.results.innerHTML = html;
+					var first = els.results.querySelector('.search-result');
+					if (first) first.setAttribute('data-active', '');
+				}
+
+				function searchBindInput() {
+					var input = document.querySelector('[data-search-input]');
+					if (!input || input.__searchBound) return;
+					input.__searchBound = true;
+					input.addEventListener('input', function () {
+						clearTimeout(searchDebounce);
+						var v = input.value;
+						searchDebounce = setTimeout(function () {
+							searchRender(v);
+						}, 110);
+					});
+				}
+
+				function searchKey(e) {
+					var isOpen = document.documentElement.classList.contains('search-open');
+					var meta = e.metaKey || e.ctrlKey;
+					if (meta && (e.key === 'k' || e.key === 'K')) {
+						e.preventDefault();
+						isOpen ? searchClose() : searchOpen();
+						return;
+					}
+					if (!isOpen) return;
+					if (e.key === 'Escape') {
+						e.preventDefault();
+						searchClose();
+						return;
+					}
+					var results = document.querySelector('[data-search-results]');
+					if (!results) return;
+					var links = results.querySelectorAll('.search-result');
+					if (!links.length) return;
+					var active = results.querySelector('.search-result[data-active]');
+					var idx = active ? Array.prototype.indexOf.call(links, active) : -1;
+					if (e.key === 'ArrowDown') {
+						e.preventDefault();
+						idx = Math.min(idx + 1, links.length - 1);
+					} else if (e.key === 'ArrowUp') {
+						e.preventDefault();
+						idx = Math.max(idx - 1, 0);
+					} else if (e.key === 'Enter' && active) {
+						e.preventDefault();
+						active.click();
+						return;
+					} else {
+						return;
+					}
+					for (var i = 0; i < links.length; i++) {
+						if (i === idx) {
+							links[i].setAttribute('data-active', '');
+							links[i].scrollIntoView({ block: 'nearest' });
+						} else {
+							links[i].removeAttribute('data-active');
+						}
+					}
+				}
+
+				function onScroll() {
+					var n = document.querySelector('.nav');
+					if (!n) return;
+					if (window.scrollY > 40) n.classList.add('scrolled');
+					else n.classList.remove('scrolled');
+				}
+
+				function initReveal() {
+					var reveal = document.querySelectorAll('[data-reveal]');
+					if (!reveal.length) return;
+					if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+						reveal.forEach(function (el) {
+							el.classList.add('visible');
+						});
+						return;
+					}
+					function markVisible(el) {
+						el.classList.add('visible');
+					}
+					/* threshold 0: with e.g. 0.12, a very tall section can never reach 12% intersection ratio, so it stays opacity:0 forever */
+					var io = new IntersectionObserver(
+						function (entries) {
+							entries.forEach(function (entry) {
+								if (entry.isIntersecting) {
+									markVisible(entry.target);
+									io.unobserve(entry.target);
+								}
+							});
+						},
+						{ threshold: 0, rootMargin: '0px 0px -6% 0px' },
+					);
+					reveal.forEach(function (el) {
+						io.observe(el);
+					});
+					requestAnimationFrame(function () {
+						reveal.forEach(function (el) {
+							if (el.classList.contains('visible')) return;
+							var r = el.getBoundingClientRect();
+							var vh = window.innerHeight || document.documentElement.clientHeight;
+							if (r.bottom > 0 && r.top < vh) {
+								markVisible(el);
+								io.unobserve(el);
+							}
+						});
+					});
+				}
+
+				/* ---- Code blocks: wrap each <pre> with a header bar + copy button ---- */
+				var LANG_LABELS = {
+					ts: 'TypeScript',
+					typescript: 'TypeScript',
+					tsx: 'TSX',
+					js: 'JavaScript',
+					javascript: 'JavaScript',
+					jsx: 'JSX',
+					py: 'Python',
+					python: 'Python',
+					sh: 'Bash',
+					bash: 'Bash',
+					shell: 'Shell',
+					zsh: 'Zsh',
+					yml: 'YAML',
+					yaml: 'YAML',
+					json: 'JSON',
+					md: 'Markdown',
+					markdown: 'Markdown',
+					mdx: 'MDX',
+					html: 'HTML',
+					css: 'CSS',
+					scss: 'SCSS',
+					astro: 'Astro',
+					go: 'Go',
+					rust: 'Rust',
+					rs: 'Rust',
+					java: 'Java',
+					c: 'C',
+					cpp: 'C++',
+					'c++': 'C++',
+					cs: 'C#',
+					rb: 'Ruby',
+					ruby: 'Ruby',
+					sql: 'SQL',
+					toml: 'TOML',
+					xml: 'XML',
+					docker: 'Dockerfile',
+					dockerfile: 'Dockerfile',
+					nix: 'Nix',
+					plaintext: 'Text',
+					text: 'Text',
+					txt: 'Text',
+				};
+
+				function prettyLang(raw) {
+					if (!raw) return 'Text';
+					var k = raw.toLowerCase();
+					return LANG_LABELS[k] || raw.toUpperCase();
+				}
+
+				function copyIconSvg() {
+					return (
+						'<svg class="icon-copy" viewBox="0 0 24 24" aria-hidden="true">' +
+						'<rect x="9" y="9" width="13" height="13" rx="2"></rect>' +
+						'<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>' +
+						'</svg>' +
+						'<svg class="icon-check" viewBox="0 0 24 24" aria-hidden="true">' +
+						'<polyline points="20 6 9 17 4 12"></polyline>' +
+						'</svg>'
+					);
+				}
+
+				function decorateCodeBlocks() {
+					var pres = document.querySelectorAll('.prose pre');
+					for (var i = 0; i < pres.length; i++) {
+						var pre = pres[i];
+						if (!pre.parentElement || pre.parentElement.classList.contains('codeblock')) continue;
+						var code = pre.querySelector('code');
+						var rawLang =
+							pre.getAttribute('data-language') ||
+							(code && code.getAttribute('data-language')) ||
+							(code && (code.className.match(/language-([^\s]+)/) || [])[1]) ||
+							'';
+						var label = prettyLang(rawLang);
+
+						var wrap = document.createElement('div');
+						wrap.className = 'codeblock';
+
+						var head = document.createElement('div');
+						head.className = 'codeblock-head';
+
+						var langEl = document.createElement('span');
+						langEl.className = 'codeblock-lang';
+						langEl.textContent = label;
+
+						var btn = document.createElement('button');
+						btn.type = 'button';
+						btn.className = 'codeblock-copy';
+						btn.setAttribute('aria-label', 'Copy code');
+						btn.setAttribute('title', 'Copy code');
+						btn.innerHTML = copyIconSvg();
+						btn.__pre = pre;
+
+						head.appendChild(document.createElement('span')); /* left spacer for 3-col grid */
+						head.appendChild(langEl);
+						head.appendChild(btn);
+
+						pre.parentElement.insertBefore(wrap, pre);
+						wrap.appendChild(head);
+						wrap.appendChild(pre);
+					}
+				}
+
+				function copyCodeBlock(btn) {
+					var pre = btn.__pre;
+					if (!pre) pre = btn.closest('.codeblock') && btn.closest('.codeblock').querySelector('pre');
+					if (!pre) return;
+					var text = (pre.querySelector('code') || pre).innerText;
+					/* Trim the single trailing newline that most editors add so pasting
+					 * into another editor doesn't introduce a blank line. */
+					text = text.replace(/\n$/, '');
+					var done = function (ok) {
+						btn.setAttribute('data-state', ok ? 'copied' : 'error');
+						btn.setAttribute('aria-label', ok ? 'Copied!' : 'Copy failed');
+						setTimeout(function () {
+							btn.removeAttribute('data-state');
+							btn.setAttribute('aria-label', 'Copy code');
+						}, 1600);
+					};
+					if (navigator.clipboard && navigator.clipboard.writeText) {
+						navigator.clipboard.writeText(text).then(
+							function () {
+								done(true);
+							},
+							function () {
+								done(false);
+							},
+						);
+					} else {
+						/* Fallback: legacy textarea + execCommand */
+						try {
+							var ta = document.createElement('textarea');
+							ta.value = text;
+							ta.style.position = 'fixed';
+							ta.style.opacity = '0';
+							document.body.appendChild(ta);
+							ta.select();
+							document.execCommand('copy');
+							document.body.removeChild(ta);
+							done(true);
+						} catch (e) {
+							done(false);
+						}
+					}
+				}
+
+				function boot() {
+					onScroll();
+					initReveal();
+					searchBindInput();
+					decorateCodeBlocks();
+				}
+
+				boot();
+				window.addEventListener('scroll', onScroll, { passive: true });
+				document.addEventListener('astro:page-load', boot);
+				document.addEventListener('keydown', searchKey);
+			})();
+		</script>
+	</body>
+</html>

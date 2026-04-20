@@ -1,0 +1,104 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import { site } from '../../site';
+import { resolvePhotoCover, resolvePhotoImage } from '../../utils/photo-assets';
+import Toc from '../../components/Toc.astro';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('photos');
+	return posts.map((post) => ({ params: { slug: post.id } }));
+}
+
+const slug = Astro.params.slug;
+if (slug === undefined) return Astro.redirect('/photo');
+const post = await getEntry('photos', slug);
+if (!post) return Astro.redirect('/photo');
+const { Content, headings } = await render(post);
+const hasToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length >= 2;
+
+const cover = resolvePhotoCover(post.id, post.data.cover);
+const gallery = (post.data.images ?? [])
+	.map((entry) => resolvePhotoImage(post.id, entry))
+	.filter((v): v is { img: { src: string; width: number; height: number }; alt?: string } => !!v);
+
+function formatDate(d: Date | undefined) {
+	if (!d) return undefined;
+	return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+---
+
+<BaseLayout title={`${post.data.title} — ${site.name}`} description={post.data.description || post.data.title}>
+	<article class="photo-article">
+		<header class="photo-article-head">
+			<div class="article-heading article-heading--centered">
+				<p class="article-meta">
+					{formatDate(post.data.pubDate) ?? 'Photo'}
+					{post.data.location ? <span class="meta-dot">·</span> : null}
+					{post.data.location ? <span>{post.data.location}</span> : null}
+				</p>
+				<h1>{post.data.title}</h1>
+			</div>
+			{post.data.description ? <p class="lead">{post.data.description}</p> : null}
+		</header>
+
+		{
+			gallery.length === 0 && cover ? (
+				<figure class="photo-single">
+					<img
+						src={cover.src}
+						alt={`${post.data.title} — cover`}
+						width={cover.width}
+						height={cover.height}
+						loading="eager"
+						decoding="async"
+					/>
+				</figure>
+			) : null
+		}
+
+		{
+			gallery.length === 1 ? (
+				<figure class="photo-single">
+					<img
+						src={gallery[0].img.src}
+						alt={gallery[0].alt ?? post.data.title}
+						width={gallery[0].img.width}
+						height={gallery[0].img.height}
+						loading="eager"
+						decoding="async"
+					/>
+				</figure>
+			) : null
+		}
+
+		{
+			gallery.length >= 2 ? (
+				<div class="photo-masonry" role="list">
+					{gallery.map((g, i) => (
+						<figure class="photo-masonry-item" role="listitem">
+							<img
+								src={g.img.src}
+								alt={g.alt ?? `${post.data.title} — ${i + 1}`}
+								width={g.img.width}
+								height={g.img.height}
+								loading={i < 2 ? 'eager' : 'lazy'}
+								decoding="async"
+							/>
+						</figure>
+					))}
+				</div>
+			) : null
+		}
+
+		{hasToc ? (
+			<div class="photo-toc-wrap">
+				<Toc headings={headings} />
+			</div>
+		) : null}
+
+		<div class="prose photo-prose">
+			<Content />
+		</div>
+	</article>
+</BaseLayout>

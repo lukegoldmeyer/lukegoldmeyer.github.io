@@ -1,0 +1,68 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import { site } from '../../site';
+import { resolveProjectThumbnail } from '../../utils/project-thumbnails';
+import Toc from '../../components/Toc.astro';
+
+export async function getStaticPaths() {
+	const projects = await getCollection('projects');
+	return projects.map((project) => ({
+		params: { slug: project.id },
+	}));
+}
+
+/** Reload the entry here — do not pass `project` via getStaticPaths props or `thumbnail` stays a raw path string after serialization and breaks `<Image>`. */
+const slug = Astro.params.slug;
+if (slug === undefined) {
+	return Astro.redirect('/projects');
+}
+const project = await getEntry('projects', slug);
+if (!project) {
+	return Astro.redirect('/projects');
+}
+const { Content, headings } = await render(project);
+
+const heroThumb = resolveProjectThumbnail(project.id, project.data.thumbnail);
+const hasToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length >= 2;
+
+function formatDate(d: Date) {
+	return d.toLocaleDateString('en-GB', {
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric',
+	});
+}
+---
+
+<BaseLayout title={`${project.data.title} — ${site.name}`} description={project.data.description || project.data.title}>
+	<article class:list={['article-wrap', hasToc && 'article-wrap--with-toc']}>
+		<div class="article-main">
+			{heroThumb ? (
+				<div class="article-hero-thumb">
+					<Image
+						src={heroThumb}
+						alt={`${project.data.title} — cover`}
+						width={1440}
+						height={810}
+						sizes="(max-width: 900px) 100vw, 880px"
+					/>
+				</div>
+			) : null}
+			<div class="article-heading">
+				<p class="article-meta">{project.data.pubDate ? formatDate(project.data.pubDate) : 'Project'}</p>
+				<h1>{project.data.title}</h1>
+			</div>
+			{project.data.description ? <p class="lead">{project.data.description}</p> : null}
+			<div class="prose">
+				<Content />
+			</div>
+		</div>
+		{hasToc ? (
+			<aside class="article-toc">
+				<Toc headings={headings} />
+			</aside>
+		) : null}
+	</article>
+</BaseLayout>

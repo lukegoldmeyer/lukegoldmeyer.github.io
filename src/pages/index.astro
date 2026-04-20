@@ -1,0 +1,390 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../site';
+import { resolveProjectThumbnail } from '../utils/project-thumbnails';
+import { sortProjectsByRecency } from '../utils/sort-projects';
+import { resolvePhotoCover } from '../utils/photo-assets';
+import Pin from '../components/Pin.astro';
+
+const nameParts = site.name.trim().split(/\s+/);
+const firstName = nameParts[0] ?? site.name;
+const restName = nameParts.slice(1).join(' ');
+
+const bioParagraphs = site.bio
+	.trim()
+	.split(/\n\s*\n/)
+	.map((p) => p.trim())
+	.filter(Boolean);
+
+const skillsList = [...site.skills];
+const marqueeSkills = [...skillsList, ...skillsList];
+
+const allProjects = sortProjectsByRecency(await getCollection('projects'));
+const recentProjects = allProjects.slice(0, 3);
+
+const allPhotos = sortProjectsByRecency(await getCollection('photos'));
+const recentPhotos = allPhotos.slice(0, 3);
+
+function formatProjectDate(d: Date) {
+	return d.toLocaleDateString('en-GB', {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	});
+}
+
+function pyearLine(project: (typeof recentProjects)[0]) {
+	const d = project.data;
+	return d.pubDate ? formatProjectDate(d.pubDate) : '—';
+}
+---
+
+<BaseLayout title={site.name} description={site.tagline}>
+	<section class="hero" id="top" aria-label="Introduction">
+		<div class="scroll-hint" aria-hidden="true">
+			<span>Scroll</span>
+			<div class="scroll-line"></div>
+		</div>
+		<p class="hero-eyebrow">{site.role}</p>
+		<h1 class="hero-title">
+			<span class="line">
+				<span class="line-inner">{firstName}</span>
+			</span>
+			{
+				restName ? (
+					<span class="line">
+						<span class="line-inner">{restName}</span>
+					</span>
+				) : null
+			}
+		</h1>
+		<div class="hero-bottom">
+			<div class="hero-main">
+				<p class="hero-desc">{site.tagline}</p>
+				<div class="hero-marquee-stack">
+					<div class="hero-pill-row">
+						<span class="pill">
+							<span class="pill-dot" aria-hidden="true"></span>
+							{site.location}
+						</span>
+					</div>
+					<div class="skills-marquee" aria-label="Skills">
+						<div class="skills-marquee-inner">
+							<div class="skills-marquee-track">
+								{
+									marqueeSkills.map((skill) => (
+										<span class="skills-marquee-item">{skill}</span>
+									))
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section id="work" aria-label="Selected work">
+		<div class="s-header">
+			<div>
+				<p class="s-label">{site.workIntro}</p>
+				<h2 class="s-title">
+					<span class="tl">
+						<span>{site.workSectionTitle}</span>
+					</span>
+				</h2>
+			</div>
+		</div>
+		<div class="projects">
+			{
+				recentProjects.length ? (
+					recentProjects.map((project, index) => {
+						const thumb = resolveProjectThumbnail(project.id, project.data.thumbnail);
+						const tags = project.data.tags ?? [];
+						const wip = project.data.wip === true;
+						const pinned = project.data.pin === true;
+						const eyebrow = pyearLine(project);
+						const hasThumb = !!thumb;
+
+						const inner = (
+							<div class="pcard-inner">
+								<div class="pcard-info">
+									<div class:list={['pcard-top', wip && 'pcard-top--wip']}>
+										<span class="pnum">{String(index + 1).padStart(2, '0')}</span>
+										{wip ? (
+											<span class="wip-badge">
+												<span class="wip-badge-dot" aria-hidden="true" />
+												Work in progress
+											</span>
+										) : null}
+										<Pin pinned={pinned} />
+									</div>
+									<div class="pcard-mid">
+										<p class="pyear">{eyebrow}</p>
+										<h3 class="pname">{project.data.title}</h3>
+										{project.data.description ? (
+											<p class="pdesc">{project.data.description}</p>
+										) : null}
+										{tags.length > 0 ? (
+											<div class="tags">
+												{tags.map((tag) => (
+													<span class="tag">{tag}</span>
+												))}
+											</div>
+										) : null}
+									</div>
+								</div>
+								{hasThumb ? (
+									<div class="pcard-vis">
+										<div class:list={['pcard-bg', `pcard-bg--${index % 4}`]} />
+										<img
+											class="pcard-img"
+											src={thumb.src}
+											alt={`${project.data.title} — preview`}
+											width={thumb.width}
+											height={thumb.height}
+											loading="lazy"
+											decoding="async"
+										/>
+										<div class="pcard-img-overlay" />
+										<div class="p-arrow" aria-hidden="true">
+											<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+												<path
+													d="M2 12L12 2M12 2H4M12 2V10"
+													stroke="white"
+													stroke-width="1.5"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												/>
+											</svg>
+										</div>
+									</div>
+								) : null}
+							</div>
+						);
+
+						const classes = [
+							'pcard',
+							wip && 'pcard--wip',
+							!hasThumb && 'pcard--no-thumb',
+						];
+
+						return wip ? (
+							<article class:list={classes}>{inner}</article>
+						) : (
+							<a class:list={classes} href={`/projects/${project.id}/`}>
+								{inner}
+							</a>
+						);
+					})
+				) : (
+					<p class="work-empty">
+						No project posts yet. Add a folder under{' '}
+						<code class="work-empty-code">src/content/projects/&lt;slug&gt;/</code> with{' '}
+						<code class="work-empty-code">index.md</code> or <code class="work-empty-code">index.mdx</code>{' '}
+						and images beside it.
+					</p>
+				)
+			}
+		</div>
+		{
+			recentProjects.length > 0 && (
+				<div class="section-cta-wrap">
+					<a class="section-cta" href="/projects" aria-label="All projects">
+						<span class="section-cta-text">All Projects</span>
+						<span class="section-cta-arrow" aria-hidden="true">
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+								<path
+									d="M2 12L12 2M12 2H4M12 2V10"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</span>
+					</a>
+				</div>
+			)
+		}
+	</section>
+
+	<section id="photos" aria-label="Recent photography">
+		<div class="s-header">
+			<div>
+				<p class="s-label">Recent</p>
+				<h2 class="s-title">
+					<span class="tl">
+						<span>Recent Photos </span>
+					</span>
+				</h2>
+			</div>
+		</div>
+		{
+			recentPhotos.length ? (
+				<div class="photo-home-grid">
+					{recentPhotos.map((post) => {
+						const cover = resolvePhotoCover(post.id, post.data.cover);
+						const date = post.data.pubDate ? formatProjectDate(post.data.pubDate) : '';
+						const pinned = post.data.pin === true;
+						const hasCover = !!cover;
+						return (
+							<a
+								class:list={['photo-home-card', !hasCover && 'photo-home-card--no-cover']}
+								href={`/photo/${post.id}/`}
+							>
+								{hasCover ? (
+									<div class="photo-home-media">
+										<img
+											src={cover.src}
+											alt={`${post.data.title} — cover`}
+											width={cover.width}
+											height={cover.height}
+											loading="lazy"
+											decoding="async"
+										/>
+										<div class="photo-home-overlay" aria-hidden="true" />
+										<div class="p-arrow" aria-hidden="true">
+											<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+												<path
+													d="M2 12L12 2M12 2H4M12 2V10"
+													stroke="white"
+													stroke-width="1.5"
+													stroke-linecap="round"
+													stroke-linejoin="round"
+												/>
+											</svg>
+										</div>
+									</div>
+								) : null}
+								<div class="photo-home-body">
+									<h3 class="photo-home-title">
+										{post.data.title}
+										<Pin pinned={pinned} />
+									</h3>
+									{date ? <span class="photo-home-date">{date}</span> : null}
+								</div>
+							</a>
+						);
+					})}
+				</div>
+			) : (
+				<p class="work-empty">
+					No photo posts yet. Add a folder under{' '}
+					<code class="work-empty-code">src/content/photos/&lt;slug&gt;/</code> with{' '}
+					<code class="work-empty-code">index.md</code> or <code class="work-empty-code">index.mdx</code>{' '}
+					and image files beside it.
+				</p>
+			)
+		}
+		{
+			recentPhotos.length > 0 && (
+				<div class="section-cta-wrap">
+					<a class="section-cta" href="/photo" aria-label="All photos">
+						<span class="section-cta-text">All Photos</span>
+						<span class="section-cta-arrow" aria-hidden="true">
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+								<path
+									d="M2 12L12 2M12 2H4M12 2V10"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</span>
+					</a>
+				</div>
+			)
+		}
+	</section>
+
+	<section class="section" id="about" data-reveal>
+		<div class="about-grid">
+			<div class="about-left">
+				<header class="about-head">
+					<p class="section-label">About</p>
+					<h2 class="section-title about-section-title">Who Am I?</h2>
+				</header>
+				<div class="about-prose">
+					{bioParagraphs.map((p) => <p>{p}</p>)}
+				</div>
+				<div class="about-panels">
+					<div class="about-skills-block">
+						<h3 class="subhead">Skills</h3>
+						<ul class="skills">
+							{site.skills.map((s) => <li>{s}</li>)}
+						</ul>
+					</div>
+					{
+						site.experience.length > 0 && (
+							<div class="about-exp-block">
+								<h3 class="subhead">Experience</h3>
+								<ul class="timeline">
+									{site.experience.map((e) => (
+										<li>
+											<span>
+												{e.role}
+												{e.org ? <span class="exp-org"> · {e.org}</span> : null}
+											</span>
+											<span>{e.period}</span>
+										</li>
+									))}
+								</ul>
+							</div>
+						)
+					}
+				</div>
+			</div>
+			<figure class="about-portrait-wrap">
+				<img
+					class="about-portrait"
+					src={site.portraitSrc}
+					alt={site.portraitAlt}
+					width="640"
+					height="800"
+					loading="lazy"
+					decoding="async"
+				/>
+			</figure>
+		</div>
+	</section>
+
+	<section class="footer-cta" id="contact" data-reveal>
+		<div class="cta-inner">
+			<p class="section-label">Social</p>
+			<h2>Get in touch</h2>
+			<p>Find me on these platforms.</p>
+			<div class="contact-links">
+				<a class="btn btn-ghost icon-btn" href={site.instagram} target="_blank" rel="noreferrer" aria-label="Instagram">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<rect x="3.5" y="3.5" width="17" height="17" rx="5"></rect>
+						<circle cx="12" cy="12" r="4"></circle>
+						<circle cx="17.5" cy="6.5" r="1.1" fill="currentColor" stroke="none"></circle>
+					</svg>
+				</a>
+				<a class="btn btn-ghost icon-btn" href={site.linkedin} target="_blank" rel="noreferrer" aria-label="LinkedIn">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<rect x="3.5" y="3.5" width="17" height="17" rx="2"></rect>
+						<line x1="8.5" y1="10" x2="8.5" y2="16"></line>
+						<circle cx="8.5" cy="7.5" r="1"></circle>
+						<path d="M12 10v6M12 12.5c0-1.5 1.1-2.5 2.5-2.5S17 11 17 12.8V16"></path>
+					</svg>
+				</a>
+				<a class="btn btn-ghost icon-btn" href={`mailto:${site.email}`} aria-label="Email">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<rect x="3.5" y="6" width="17" height="12" rx="2"></rect>
+						<path d="M4.5 7l7.5 6 7.5-6"></path>
+					</svg>
+				</a>
+				<a class="btn btn-ghost icon-btn" href={site.github} target="_blank" rel="noreferrer" aria-label="GitHub">
+					<svg viewBox="0 0 24 24" aria-hidden="true">
+						<path d="M9.5 18.5c-4 1.2-4-2.2-5.6-2.7"></path>
+						<path d="M15.5 18.5v-2.3c0-.7.1-1.3-.3-1.9 2.9-.3 5.9-1.4 5.9-6.2a4.8 4.8 0 0 0-1.3-3.3 4.5 4.5 0 0 0-.1-3.3s-1.1-.3-3.5 1.3a12.1 12.1 0 0 0-6.4 0C7.4 1.2 6.3 1.5 6.3 1.5a4.5 4.5 0 0 0-.1 3.3A4.8 4.8 0 0 0 4.9 8c0 4.8 3 5.9 5.9 6.2-.4.6-.4 1.2-.4 1.9v2.4"></path>
+				</svg>
+				</a>
+			</div>
+		</div>
+	</section>
+</BaseLayout>

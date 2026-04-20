@@ -1,0 +1,47 @@
+---
+/**
+ * Tiny pushpin icon used as a "pinned post" indicator. Drop it anywhere a post
+ * card or row is rendered; it only renders when `pinned` is truthy so you can
+ * inline it without a surrounding conditional:
+ *   <Pin pinned={project.data.pin} />
+ *
+ * Styling hooks:
+ *   .pin-badge          — outer wrapper
+ *   .pin-badge svg      — the icon
+ *   .pin-badge--bare    — variant without a circle/background, just the icon
+ */
+interface Props {
+	pinned?: boolean;
+	variant?: 'default' | 'bare';
+	/** Optional tooltip / aria-label override */
+	label?: string;
+	class?: string;
+}
+
+const { pinned, variant = 'default', label = 'Pinned', class: extra } = Astro.props;
+if (!pinned) return null;
+---
+
+<span
+	class:list={['pin-badge', variant === 'bare' && 'pin-badge--bare', extra]}
+	role="img"
+	aria-label={label}
+	title={label}
+>
+	<svg
+		width="14"
+		height="14"
+		viewBox="0 0 24 24"
+		fill="none"
+		stroke="currentColor"
+		stroke-width="1.8"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+		aria-hidden="true"
+	>
+		<line x1="12" x2="12" y1="17" y2="22"></line>
+		<path
+			d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"
+		></path>
+	</svg>
+</span>

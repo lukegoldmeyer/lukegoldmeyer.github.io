@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection } from 'astro:content';
+import { site } from '../../site';
+import { sortProjectsByRecency } from '../../utils/sort-projects';
+import ProjCard from '../../components/ProjCard.astro';
+
+const all = sortProjectsByRecency(await getCollection('projects'));
+const recent = all.slice(0, 3);
+const pinned = all.filter((p) => p.data.pin === true).slice(0, 3);
+
+/**
+ * Group projects by tag. Ordering:
+ *   1. Tags listed in `site.tagOrder` first, in that order (case-insensitive).
+ *   2. Remaining tags alphabetized.
+ * Within a section, projects are in recency order (already sorted).
+ */
+function groupByTag(projects: typeof all) {
+	const order = site.tagOrder.map((t) => t.toLowerCase());
+	const hidden = new Set(site.hiddenTopics.map((t) => t.toLowerCase()));
+	const bucket = new Map<string, { label: string; items: typeof projects }>();
+	for (const project of projects) {
+		for (const tag of project.data.tags ?? []) {
+			const key = tag.toLowerCase();
+			if (hidden.has(key)) continue;
+			if (!bucket.has(key)) bucket.set(key, { label: tag, items: [] });
+			bucket.get(key)!.items.push(project);
+		}
+	}
+	const entries = [...bucket.entries()];
+	entries.sort((a, b) => {
+		const ai = order.indexOf(a[0]);
+		const bi = order.indexOf(b[0]);
+		if (ai !== -1 && bi !== -1) return ai - bi;
+		if (ai !== -1) return -1;
+		if (bi !== -1) return 1;
+		return a[1].label.localeCompare(b[1].label);
+	});
+	return entries.map(([, v]) => v);
+}
+
+const topics = groupByTag(all);
+---
+
+<BaseLayout title={`Projects — ${site.name}`} description={site.projectsIntro}>
+	<header class="blog-hero">
+		<p class="section-label">{site.projectsIntro}</p>
+		<h1>Projects</h1>
+		<p>Recent projects and documentation.</p>
+		{
+			all.length > 0 && (
+				<div class="section-cta-wrap blog-hero-cta">
+					<a class="section-cta" href="/projects/all" aria-label="Full project list">
+						<span class="section-cta-text">Full list</span>
+						<span class="section-cta-arrow" aria-hidden="true">
+							<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+								<path
+									d="M2 12L12 2M12 2H4M12 2V10"
+									stroke="currentColor"
+									stroke-width="1.5"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								/>
+							</svg>
+						</span>
+					</a>
+				</div>
+			)
+		}
+	</header>
+
+	{
+		all.length === 0 ? (
+			<div class="post-list">
+				<p class="work-empty">
+					No projects found. Add a folder under{' '}
+					<code class="work-empty-code">src/content/projects/&lt;slug&gt;/</code> with{' '}
+					<code class="work-empty-code">index.md</code> or <code class="work-empty-code">index.mdx</code> (and
+					any images) in that folder.
+				</p>
+			</div>
+		) : (
+			<>
+				<section class="proj-duo" aria-label="Recent and pinned projects" data-reveal>
+					<div class="proj-duo-col">
+						<h2 class="proj-duo-title">Recent</h2>
+						<div class="proj-cards">
+							{recent.map((project) => <ProjCard project={project} />)}
+						</div>
+					</div>
+
+					<div class="proj-duo-col">
+						<h2 class="proj-duo-title">Pinned</h2>
+						{pinned.length === 0 ? (
+							<p class="proj-duo-empty">
+								No pinned projects yet. Set <code class="work-empty-code">pin: true</code> in a
+								project's frontmatter to feature it here.
+							</p>
+						) : (
+							<div class="proj-cards">
+								{pinned.map((project) => <ProjCard project={project} />)}
+							</div>
+						)}
+					</div>
+				</section>
+
+				<section class="topics" aria-label="Topics" data-reveal>
+					<header class="topics-head">
+						<p class="section-label">Browse</p>
+						<h2 class="topics-title">Topics</h2>
+					</header>
+
+					{topics.length === 0 ? (
+						<p class="proj-duo-empty">No tagged projects yet.</p>
+					) : (
+						topics.map((topic) => (
+							<section class="topic-section">
+								<div class="topic-bar">
+									<h3 class="topic-label">{topic.label}</h3>
+									<span class="topic-count">
+										{topic.items.length} project{topic.items.length === 1 ? '' : 's'}
+									</span>
+								</div>
+								<div class="topic-cards">
+									{topic.items.map((project) => (
+										<ProjCard project={project} showTags={false} />
+									))}
+								</div>
+							</section>
+						))
+					)}
+				</section>
+			</>
+		)
+	}
+</BaseLayout>
