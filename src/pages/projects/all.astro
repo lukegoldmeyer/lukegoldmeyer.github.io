@@ -3,10 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { site } from '../../site';
 import { resolveProjectThumbnail } from '../../utils/project-thumbnails';
+import { entryIsPublic } from '../../utils/content-visibility';
 import { sortProjectsByRecency } from '../../utils/sort-projects';
 import Pin from '../../components/Pin.astro';
 
-const projects = sortProjectsByRecency(await getCollection('projects'));
+const projects = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
 
 function formatDate(d: Date | undefined) {
 	if (!d) return '—';

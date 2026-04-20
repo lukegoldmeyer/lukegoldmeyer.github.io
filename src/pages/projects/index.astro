@@ -2,10 +2,11 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { site } from '../../site';
+import { entryIsPublic } from '../../utils/content-visibility';
 import { sortProjectsByRecency } from '../../utils/sort-projects';
 import ProjCard from '../../components/ProjCard.astro';
 
-const all = sortProjectsByRecency(await getCollection('projects'));
+const all = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
 const recent = all.slice(0, 3);
 const pinned = all.filter((p) => p.data.pin === true).slice(0, 3);
 

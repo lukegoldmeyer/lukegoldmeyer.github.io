@@ -3,10 +3,11 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { site } from '../../site';
 import { resolvePhotoCover } from '../../utils/photo-assets';
+import { entryIsPublic } from '../../utils/content-visibility';
 import { sortProjectsByRecency } from '../../utils/sort-projects';
 import Pin from '../../components/Pin.astro';
 
-const all = sortProjectsByRecency(await getCollection('photos'));
+const all = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
 const recent = all.slice(0, 3);
 const featured = all.filter((p) => p.data.pin === true).slice(0, 3);
 

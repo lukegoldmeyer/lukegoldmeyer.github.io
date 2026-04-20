@@ -3,6 +3,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { site } from '../site';
 import { resolveProjectThumbnail } from '../utils/project-thumbnails';
+import { entryIsPublic } from '../utils/content-visibility';
 import { sortProjectsByRecency } from '../utils/sort-projects';
 import { resolvePhotoCover } from '../utils/photo-assets';
 import Pin from '../components/Pin.astro';
@@ -24,10 +25,10 @@ const bioParagraphs = site.bio
 const skillsList = [...site.skills];
 const marqueeSkills = [...skillsList, ...skillsList];
 
-const allProjects = sortProjectsByRecency(await getCollection('projects'));
+const allProjects = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
 const recentProjects = allProjects.slice(0, 3);
 
-const allPhotos = sortProjectsByRecency(await getCollection('photos'));
+const allPhotos = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
 const recentPhotos = allPhotos.slice(0, 3);
 
 function formatProjectDate(d: Date) {

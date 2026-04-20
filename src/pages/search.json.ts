@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
+import { entryIsPublic } from '../utils/content-visibility';
 import { sortProjectsByRecency } from '../utils/sort-projects';
 
 /**
@@ -58,8 +59,8 @@ function truncate(s: string, n: number): string {
 }
 
 export const GET: APIRoute = async () => {
-	const projects = sortProjectsByRecency(await getCollection('projects'));
-	const photos = sortProjectsByRecency(await getCollection('photos'));
+	const projects = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
+	const photos = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
 
 	const items = [
 		...projects.map((p) => ({
