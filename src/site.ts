@@ -13,7 +13,7 @@ Music is an irreplacible part of my life, from piano performance to just listeni
 
 I don't want to rot indoors, so I like to get out. Cycling is my weapon of choice. I ride road and mountain, but I usually prefer the latter. I enjoyed my time working at Velo Republic Bikes for a year or so, and I am thankful to have been a part of the NTX NICA cross country MTB team.
 
-This site serves to present my work, in both project blogs and photography showcases. Please don't hesitate to send me a message in one of the places below.`,
+This site serves to present my work, in both project blogs and photography showcases. Please send me a message if you have any questions or want to collaborate.`,
 	location: 'Texas, USA',
 	email: 'goldmeyerluke@gmail.com',
 	phone: '972-837-9912',
