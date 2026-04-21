@@ -1,13 +1,12 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry, render } from 'astro:content';
-import { entryIsPublic } from '../../utils/content-visibility';
 import { site } from '../../site';
 import { resolvePhotoCover, resolvePhotoImage } from '../../utils/photo-assets';
 import Toc from '../../components/Toc.astro';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('photos', entryIsPublic);
+	const posts = await getCollection('photos');
 	return posts.map((post) => ({ params: { slug: post.id } }));
 }
 
@@ -15,7 +14,6 @@ const slug = Astro.params.slug;
 if (slug === undefined) return Astro.redirect('/photo');
 const post = await getEntry('photos', slug);
 if (!post) return Astro.redirect('/photo');
-if (post.data.hidden) return new Response(null, { status: 404 });
 const { Content, headings } = await render(post);
 const hasToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length >= 2;
 

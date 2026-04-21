@@ -2,13 +2,12 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry, render } from 'astro:content';
-import { entryIsPublic } from '../../utils/content-visibility';
 import { site } from '../../site';
 import { resolveProjectThumbnail } from '../../utils/project-thumbnails';
 import Toc from '../../components/Toc.astro';
 
 export async function getStaticPaths() {
-	const projects = await getCollection('projects', entryIsPublic);
+	const projects = await getCollection('projects');
 	return projects.map((project) => ({
 		params: { slug: project.id },
 	}));
@@ -22,9 +21,6 @@ if (slug === undefined) {
 const project = await getEntry('projects', slug);
 if (!project) {
 	return Astro.redirect('/projects');
-}
-if (project.data.hidden) {
-	return new Response(null, { status: 404 });
 }
 const { Content, headings } = await render(project);
 

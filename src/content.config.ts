@@ -28,7 +28,7 @@ const projects = defineCollection({
 			wip: z.boolean().optional().default(false),
 			/** Pin this project to the right-hand "Pinned" column on /projects */
 			pin: z.boolean().optional().default(false),
-			/** If true, omit from the site entirely (no listing, search, or URL). */
+			/** If true, omit from listings and search; the post URL still works. */
 			hidden: z.boolean().optional().default(false),
 		}),
 });
@@ -69,7 +69,7 @@ const photos = defineCollection({
 				.default([]),
 			location: z.string().optional(),
 			pin: z.boolean().optional().default(false),
-			/** If true, omit from the site entirely (no listing, search, or URL). */
+			/** If true, omit from listings and search; the post URL still works. */
 			hidden: z.boolean().optional().default(false),
 		}),
 });
