@@ -154,7 +154,7 @@ main {
 	min-width: 0;
 	display: flex;
 	justify-content: center;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 28px;
 	align-items: center;
 	margin: 0;
@@ -273,7 +273,7 @@ main {
 	display: none;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1280px) {
 	:root {
 		--nav-pad: 20px;
 	}
@@ -1963,12 +1963,6 @@ main {
 	font-size: 12.5px;
 }
 
-/* Inline TOC used on photo articles (no sidebar there). */
-.photo-toc-wrap {
-	max-width: 720px;
-	margin: 0 auto 48px;
-}
-
 .prose {
 	font-size: 17px;
 	line-height: 1.75;
@@ -2277,6 +2271,72 @@ b {
 	padding: 12px 0;
 }
 
+/* Photo index: Recent / Featured — CSS grid (rows × cols), cell width shared; tile height = photo + copy. */
+.proj-duo--photo-hub .proj-cards {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	align-items: start;
+}
+
+.proj-duo--photo-hub .proj-card {
+	width: 100%;
+	min-width: 0;
+	padding: 8px;
+	gap: 8px;
+}
+
+@media (max-width: 900px) {
+	.proj-duo--photo-hub .proj-cards {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 520px) {
+	.proj-duo--photo-hub .proj-cards {
+		grid-template-columns: minmax(0, 1fr);
+	}
+}
+
+.proj-duo--photo-hub .proj-card--photo .proj-card-media {
+	aspect-ratio: unset !important;
+	height: auto;
+	min-height: 0;
+	max-width: none;
+	margin-inline: 0;
+	overflow: visible;
+	display: block;
+	background: transparent;
+	border: none;
+	font-size: 0;
+}
+
+.proj-duo--photo-hub .proj-card--photo .proj-card-media img {
+	width: 100%;
+	height: auto;
+	display: block;
+	object-fit: unset;
+	border: 1px solid var(--border);
+	border-radius: 0;
+}
+
+.proj-duo--photo-hub .proj-card--photo:hover .proj-card-media img {
+	transform: none;
+}
+
+.proj-duo--photo-hub .proj-card-head h3 {
+	font-size: clamp(13px, 1.15vw, 16px);
+}
+
+.proj-duo--photo-hub .proj-card-date {
+	font-size: 10px;
+}
+
+.proj-duo--photo-hub .proj-card-desc {
+	font-size: 12px;
+	-webkit-line-clamp: 2;
+}
+
 .proj-cards {
 	display: flex;
 	flex-direction: column;
@@ -2564,44 +2624,41 @@ b {
 	color: var(--muted);
 }
 
-/* "All Photos" masonry: images only, no titles/dates, no rounded corners,
- * thin border to match the other photo frames. Lives inside the normal page gutter. */
+/* "All Photos": column masonry — each image spans full column width, height from aspect ratio (no crop). */
 .photo-all-masonry {
-	column-count: 5;
-	column-gap: 8px;
+	column-count: 4;
+	column-gap: 6px;
 }
 
-@media (max-width: 1400px) {
-	.photo-all-masonry {
-		column-count: 4;
-	}
-}
-
-@media (max-width: 1024px) {
+@media (max-width: 1200px) {
 	.photo-all-masonry {
 		column-count: 3;
 	}
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
 	.photo-all-masonry {
 		column-count: 2;
 	}
 }
 
-@media (max-width: 420px) {
+@media (max-width: 480px) {
 	.photo-all-masonry {
 		column-count: 1;
 	}
 }
 
 .photo-all-tile {
-	display: block;
 	break-inside: avoid;
-	margin: 0 0 8px;
+	display: block;
+	margin: 0 0 6px;
+	width: 100%;
 	line-height: 0;
 	opacity: 1;
 	transition: opacity 0.3s var(--ease);
+	background: transparent;
+	border: none;
+	box-sizing: border-box;
 }
 
 .photo-all-tile:hover {
@@ -2614,6 +2671,7 @@ b {
 	height: auto;
 	border: 1px solid var(--border);
 	border-radius: 0;
+	box-sizing: border-box;
 }
 
 .photo-article {
@@ -2699,7 +2757,98 @@ b {
 	margin: 0 auto;
 }
 
+/* ---------- Image lightbox (project + photo post pages) ---------- */
+
+article.article-wrap img,
+article.photo-article img {
+	cursor: zoom-in;
+}
+
+.img-lightbox {
+	max-width: none;
+	max-height: none;
+	width: 100vw;
+	width: 100dvw;
+	height: 100vh;
+	height: 100dvh;
+	padding: 0;
+	margin: 0;
+	border: none;
+	background: transparent;
+	overscroll-behavior: contain;
+	color: var(--fg);
+}
+
+.img-lightbox::backdrop {
+	background: rgba(0, 0, 0, 0.88);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.img-lightbox-close {
+	position: fixed;
+	top: max(16px, env(safe-area-inset-top));
+	right: max(16px, env(safe-area-inset-right));
+	z-index: 2;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 46px;
+	padding: 0;
+	border: 1px solid var(--border);
+	border-radius: 999px;
+	background: var(--bg2);
+	color: var(--muted);
+	cursor: pointer;
+	transition:
+		color 0.25s var(--ease),
+		border-color 0.25s var(--ease),
+		background 0.25s var(--ease);
+}
+
+.img-lightbox-close:hover,
+.img-lightbox-close:focus-visible {
+	color: var(--fg);
+	border-color: var(--border-hover);
+	background: var(--bg);
+	outline: none;
+}
+
+.img-lightbox-close svg {
+	width: 20px;
+	height: 20px;
+	display: block;
+}
+
+.img-lightbox-frame {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	padding: max(72px, calc(20px + env(safe-area-inset-top)))
+		max(20px, env(safe-area-inset-right)) max(20px, env(safe-area-inset-bottom))
+		max(20px, env(safe-area-inset-left));
+	box-sizing: border-box;
+}
+
+.img-lightbox-img {
+	max-width: 100%;
+	max-height: min(92vh, 92dvh);
+	width: auto;
+	height: auto;
+	object-fit: contain;
+	cursor: default;
+	vertical-align: middle;
+}
+
 @media (prefers-reduced-motion: reduce) {
+	.img-lightbox::backdrop {
+		backdrop-filter: none;
+		-webkit-backdrop-filter: none;
+	}
+
 	.proj-card:hover .proj-card-media img,
 	.photo-masonry-item:hover img {
 		transform: none;

@@ -4,6 +4,7 @@ import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import SearchOverlay from '../components/SearchOverlay.astro';
+import ImageLightbox from '../components/ImageLightbox.astro';
 
 interface Props {
 	title: string;
@@ -70,6 +71,7 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 			</main>
 			<Footer />
 		</div>
+		<ImageLightbox />
 		<SearchOverlay />
 		<script is:inline>
 			(function () {
@@ -101,11 +103,45 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 					}
 				}
 
+				function imgLightboxOpen(img) {
+					var dlg = document.querySelector('[data-img-lightbox]');
+					var full = document.querySelector('[data-img-lightbox-img]');
+					if (!dlg || !full || !img || img.tagName !== 'IMG') return;
+					full.src = img.currentSrc || img.src;
+					full.alt = img.alt || '';
+					if (typeof dlg.showModal === 'function') dlg.showModal();
+				}
+
+				function imgLightboxClose() {
+					var dlg = document.querySelector('[data-img-lightbox]');
+					if (dlg && dlg.open && typeof dlg.close === 'function') dlg.close();
+				}
+
+				function bindImgLightboxBackdrop() {
+					var dlg = document.querySelector('[data-img-lightbox]');
+					if (!dlg || dlg.__imgLbBackdrop) return;
+					dlg.__imgLbBackdrop = true;
+					dlg.addEventListener('click', function (ev) {
+						if (ev.target === dlg) imgLightboxClose();
+					});
+				}
+
 				document.addEventListener(
 					'click',
 					function (e) {
 						var t = e.target;
 						if (!(t instanceof Element)) return;
+						if (t.closest('[data-img-lightbox-close]')) {
+							e.preventDefault();
+							imgLightboxClose();
+							return;
+						}
+						if (t.tagName === 'IMG' && t.closest('article.article-wrap, article.photo-article')) {
+							e.preventDefault();
+							e.stopPropagation();
+							imgLightboxOpen(t);
+							return;
+						}
 						if (t.closest('[data-theme-toggle]')) {
 							e.preventDefault();
 							themeToggle();
@@ -606,6 +642,8 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 				}
 
 				function boot() {
+					imgLightboxClose();
+					bindImgLightboxBackdrop();
 					onScroll();
 					initReveal();
 					searchBindInput();

@@ -8,7 +8,8 @@ import { sortProjectsByRecency } from '../../utils/sort-projects';
 import Pin from '../../components/Pin.astro';
 
 const all = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
-const recent = all.slice(0, 3);
+/** `pin: true` lists under Featured only, not Recent; still in All Photos. */
+const recent = all.filter((p) => p.data.pin !== true).slice(0, 3);
 const featured = all.filter((p) => p.data.pin === true).slice(0, 3);
 
 function formatDate(d: Date | undefined) {
@@ -36,47 +37,46 @@ function formatDate(d: Date | undefined) {
 			</div>
 		) : (
 			<>
-				<section class="proj-duo" aria-label="Recent and featured photos" data-reveal>
+				<section class="proj-duo proj-duo--photo-hub" aria-label="Recent and featured photos" data-reveal>
 					<div class="proj-duo-col">
 						<h2 class="proj-duo-title">Recent</h2>
-						<div class="proj-cards">
-							{recent.map((post) => {
-								const cover = resolvePhotoCover(post.id, post.data.cover);
-								const hasCover = !!cover;
-								return (
-									<a
-										class:list={[
-											'proj-card',
-											'proj-card--photo',
-											!hasCover && 'proj-card--no-thumb',
-										]}
-										href={`/photo/${post.id}/`}
-									>
-										{hasCover ? (
-											<div class="proj-card-media">
-												<img
-													src={cover.src}
-													alt={`${post.data.title} — cover`}
-													width={cover.width}
-													height={cover.height}
-													loading="lazy"
-													decoding="async"
-												/>
-											</div>
-										) : null}
-										<div class="proj-card-body">
-											<div class="proj-card-head">
-												<h3>
-													{post.data.title}
-													<Pin pinned={post.data.pin === true} />
-												</h3>
-												<time
-													class="proj-card-date"
-													datetime={post.data.pubDate?.toISOString()}
-												>
-													{formatDate(post.data.pubDate)}
-												</time>
-											</div>
+						{recent.length === 0 ? (
+							<p class="proj-duo-empty">
+								No recent photos yet. Featured posts (<code class="work-empty-code">pin: true</code>)
+								only show under Featured; add more posts or clear the pin to appear here.
+							</p>
+						) : (
+							<div class="proj-cards">
+								{recent.map((post) => {
+									const cover = resolvePhotoCover(post.id, post.data.cover);
+									const hasCover = !!cover;
+									return (
+										<a
+											class:list={['proj-card', 'proj-card--photo', !hasCover && 'proj-card--no-thumb']}
+											href={`/photo/${post.id}/`}
+										>
+											{hasCover ? (
+												<div class="proj-card-media">
+													<img
+														src={cover.src}
+														alt={`${post.data.title} — cover`}
+														width={cover.width}
+														height={cover.height}
+														loading="lazy"
+														decoding="async"
+													/>
+												</div>
+											) : null}
+											<div class="proj-card-body">
+												<div class="proj-card-head">
+													<h3>{post.data.title}</h3>
+													<time
+														class="proj-card-date"
+														datetime={post.data.pubDate?.toISOString()}
+													>
+														{formatDate(post.data.pubDate)}
+													</time>
+												</div>
 											{post.data.description ? (
 												<p class="proj-card-desc">{post.data.description}</p>
 											) : null}
@@ -85,17 +85,18 @@ function formatDate(d: Date | undefined) {
 											) : null}
 										</div>
 									</a>
-								);
-							})}
-						</div>
+									);
+								})}
+							</div>
+						)}
 					</div>
 
 					<div class="proj-duo-col">
 						<h2 class="proj-duo-title">Featured</h2>
 						{featured.length === 0 ? (
 							<p class="proj-duo-empty">
-								No featured photos yet. Set <code class="work-empty-code">pin: true</code> in a
-								photo post's frontmatter to feature it here.
+								No featured photos yet. Set <code class="work-empty-code">pin: true</code> in a photo
+								post's frontmatter to feature it here.
 							</p>
 						) : (
 							<div class="proj-cards">
@@ -104,11 +105,7 @@ function formatDate(d: Date | undefined) {
 									const hasCover = !!cover;
 									return (
 										<a
-											class:list={[
-												'proj-card',
-												'proj-card--photo',
-												!hasCover && 'proj-card--no-thumb',
-											]}
+											class:list={['proj-card', 'proj-card--photo', !hasCover && 'proj-card--no-thumb']}
 											href={`/photo/${post.id}/`}
 										>
 											{hasCover ? (
@@ -163,11 +160,7 @@ function formatDate(d: Date | undefined) {
 							const cover = resolvePhotoCover(post.id, post.data.cover);
 							if (!cover) return null;
 							return (
-								<a
-									class="photo-all-tile"
-									href={`/photo/${post.id}/`}
-									aria-label={post.data.title}
-								>
+								<a class="photo-all-tile" href={`/photo/${post.id}/`} aria-label={post.data.title}>
 									<img
 										src={cover.src}
 										alt={post.data.title}

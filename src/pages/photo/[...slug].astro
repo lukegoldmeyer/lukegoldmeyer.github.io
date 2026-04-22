@@ -3,7 +3,6 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 import { site } from '../../site';
 import { resolvePhotoCover, resolvePhotoImage } from '../../utils/photo-assets';
-import Toc from '../../components/Toc.astro';
 
 export async function getStaticPaths() {
 	const posts = await getCollection('photos');
@@ -14,8 +13,7 @@ const slug = Astro.params.slug;
 if (slug === undefined) return Astro.redirect('/photo');
 const post = await getEntry('photos', slug);
 if (!post) return Astro.redirect('/photo');
-const { Content, headings } = await render(post);
-const hasToc = headings.filter((h) => h.depth >= 2 && h.depth <= 3).length >= 2;
+const { Content } = await render(post);
 
 const cover = resolvePhotoCover(post.id, post.data.cover);
 const gallery = (post.data.images ?? [])
@@ -90,12 +88,6 @@ function formatDate(d: Date | undefined) {
 				</div>
 			) : null
 		}
-
-		{hasToc ? (
-			<div class="photo-toc-wrap">
-				<Toc headings={headings} />
-			</div>
-		) : null}
 
 		<div class="prose photo-prose">
 			<Content />

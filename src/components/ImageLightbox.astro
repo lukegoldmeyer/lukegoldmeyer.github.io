@@ -1,0 +1,22 @@
+---
+/**
+ * Full-screen image preview for project and photo posts. Opened when clicking
+ * any `<img>` inside `article.article-wrap` or `article.photo-article`.
+ * Controlled from `BaseLayout.astro` (showModal / close + backdrop click).
+ */
+---
+
+<dialog class="img-lightbox" data-img-lightbox aria-label="Enlarged image">
+	<button type="button" class="img-lightbox-close" data-img-lightbox-close aria-label="Close">
+		<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+			<path
+				d="M6 6l12 12M18 6L6 18"
+				stroke="currentColor"
+				stroke-width="1.8"
+				stroke-linecap="round"></path>
+		</svg>
+	</button>
+	<div class="img-lightbox-frame">
+		<img class="img-lightbox-img" data-img-lightbox-img alt="" decoding="async" />
+	</div>
+</dialog>
