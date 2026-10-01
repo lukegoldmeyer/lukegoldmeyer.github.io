@@ -1,0 +1,39 @@
+---
+import '../../styles/global.css';
+import '../../admin/admin.css';
+import App from '../../admin/App';
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="robots" content="noindex, nofollow" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:ital,wght@0,300;0,400;0,600;0,700;0,800;1,300&display=swap"
+			rel="stylesheet"
+		/>
+		<title>Admin — Luke Goldmeyer</title>
+		<script is:inline>
+			/* Same theme resolution as the site, applied before first paint. */
+			(function () {
+				var s = null;
+				try {
+					s = localStorage.getItem('theme');
+				} catch (e) {}
+				document.documentElement.setAttribute(
+					'data-theme',
+					s || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
+				);
+			})();
+		</script>
+	</head>
+	<body>
+		<App client:only="preact" />
+		<noscript><p style="padding:40px">The editor needs JavaScript.</p></noscript>
+	</body>
+</html>

@@ -81,7 +81,7 @@ const media = defineCollection({
 			),
 			/**
 			 * Ordered list of videos. Each one is either a short clip stored beside the post
-			 * (`src: ./clip.mp4`, max 25 MB per file on Cloudflare Pages) or a YouTube/Vimeo
+			 * (`src: ./clip.mp4`, max 50 MB per file on GitHub) or a YouTube/Vimeo
 			 * link (`embed: https://youtu.be/...`) for anything longer.
 			 */
 			videos: blank(

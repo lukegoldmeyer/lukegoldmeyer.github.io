@@ -1,7 +1,7 @@
 name: Instagram
 
 on:
-  # A media post changed: publish any newly opted-in posts once Cloudflare has deployed them.
+  # A media post changed: publish any newly opted-in posts once GitHub Pages has deployed them.
   push:
     branches: [main]
     paths: ['src/content/media/**']

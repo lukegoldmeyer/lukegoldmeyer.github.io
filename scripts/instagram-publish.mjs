@@ -44,7 +44,7 @@ async function waitForLive(url) {
 		if (res?.ok && res.headers.get('content-type')?.includes('image/jpeg')) return;
 		await sleep(30_000);
 	}
-	throw new Error(`${url} never went live; is the Cloudflare deploy failing?`);
+	throw new Error(`${url} never went live; is the GitHub Pages deploy failing?`);
 }
 
 /** Containers process asynchronously; publishing before FINISHED fails. */

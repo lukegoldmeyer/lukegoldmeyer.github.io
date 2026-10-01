@@ -1,12 +1,19 @@
-// Cloudflare Workers config: serve the static Astro build. No server code.
+// Optional Cloudflare Worker: the "Sign in with GitHub" helper for /admin (worker/auth.ts).
+// NOT deployed yet: the editor signs in with a GitHub token until AUTH_URL in
+// src/admin/config.ts is set. See README → Admin sign-in.
+// The site itself is hosted on GitHub Pages; this Worker serves no pages.
 // `name` must match the Worker's name in the Cloudflare dashboard.
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "lukegoldmeyer-github-io",
+	"main": "worker/auth.ts",
 	"compatibility_date": "2026-06-01",
-	"assets": {
-		"directory": "./dist",
-		// Serve dist/404.html with a 404 status for unknown URLs.
-		"not_found_handling": "404-page"
-	}
+	"vars": {
+		"ALLOWED_USERS": "lukegoldmeyer",
+		"ALLOWED_ORIGINS": "https://lukegoldmeyer.github.io,http://localhost:4321",
+		"SCOPE": "public_repo"
+	},
+	// GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are secrets set in the dashboard;
+	// deploys never touch them.
+	"keep_vars": true
 }

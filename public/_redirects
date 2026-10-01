@@ -1,4 +1,0 @@
-# Cloudflare Pages redirects (ignored by other hosts).
-/photo        /media           301
-/photo/       /media/          301
-/photo/*      /media/:splat    301

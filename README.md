@@ -2,7 +2,8 @@
 
 Personal portfolio built with [Astro 6](https://astro.build). Dark-first, light
 second, with content collections for projects and media (photo, graphic design,
-video), a CMS at `/admin`, and optional cross-posting to Instagram.
+video), a custom editor at `/admin`, and optional cross-posting to Instagram.
+Hosted on GitHub Pages at <https://lukegoldmeyer.github.io>.
 
 ## Getting started
 
@@ -24,13 +25,12 @@ npm run dev       # http://localhost:4321
 
 ```text
 /
-├── astro.config.mjs             # Astro + MDX + Shiki config, /photo → /media redirects
-├── public/
-│   ├── admin/                   # Sveltia CMS: index.html + config.yml (fields for each post type)
-│   ├── _headers, _redirects     # Cloudflare Pages caching + 301s
-│   └── portrait.jpg, favicons
+├── astro.config.mjs             # Astro + MDX + Preact + Shiki config, /photo → /media redirects
+├── public/                      # portrait.jpg, favicons
 ├── scripts/                     # Instagram: prepare JPEGs at build, publish from GitHub Actions
+├── worker/auth.ts               # optional "Sign in with GitHub" helper (Cloudflare Worker, not deployed yet)
 ├── src/
+│   ├── admin/                   # the /admin editor (Preact): GitHub client, forms, live preview
 │   ├── components/              # Nav, Footer, SearchOverlay, Toc, ProjCard, MediaCard, Pin
 │   ├── content/
 │   │   ├── projects/<slug>/     # one folder per project post (index.mdx + its images)
@@ -45,8 +45,9 @@ npm run dev       # http://localhost:4321
 │   │   ├── projects/[...slug].astro    # individual project
 │   │   ├── media/index.astro           # Recent + Featured + All Work (filter by type)
 │   │   ├── media/[...slug].astro       # individual media post (images, videos)
+│   │   ├── admin/                      # editor page + small cover thumbnails for its post list
 │   │   └── search.json.ts              # build-time search index
-│   ├── styles/global.css        # single stylesheet — everything lives here
+│   ├── styles/global.css        # single stylesheet for the site (the editor reuses it)
 │   ├── utils/                   # thumbnail + media asset resolvers, recency sort
 │   └── site.ts                  # name, bio, nav, skills, experience, tagOrder, etc.
 └── templates/                   # post starter files for writing by hand (not loaded by Astro)
@@ -54,11 +55,21 @@ npm run dev       # http://localhost:4321
 
 ## Writing a post
 
-**Use `/admin`.** It writes the same files you would by hand, commits them to
-GitHub, and the site redeploys on its own in a minute or two. To try it locally
-without logging in, run `npm run dev`, open <http://localhost:4321/admin/index.html> in
-Chrome or Edge, and choose **Work with Local Repository** → pick this folder.
-Changes go straight to your files; commit them with git as usual.
+**Use <https://lukegoldmeyer.github.io/admin/>.** Sign in (see below), write the
+post, drop in photos or clips, and hit **Publish**. It commits the post and its
+files to `main` in one commit; GitHub Pages redeploys and the editor shows
+**Deploying… → Live ✓** (about 2 minutes).
+
+- **Live preview** on the right uses the site's own styles. On a phone, switch
+  between **Edit** and **Preview**.
+- **Photos:** drop many at once, drag (or ←/→) to reorder, ★ sets the cover, alt
+  text under each. Photos over 4000px are downscaled in the browser before upload
+  (the site never shows them bigger, and it keeps the repo small). That also
+  strips EXIF, including GPS. Tick **Keep full-size originals** to skip that.
+- **Videos:** short clips (under 50 MB) as files, or a YouTube/Vimeo link.
+- **Hidden (draft)** keeps a post out of listings and search while you work on it.
+- Removing a photo from a post deletes the file from the repo on save.
+- Frontmatter the editor doesn't know about is kept. YAML comments are not.
 
 By hand: copy a template from `templates/` to `src/content/<projects|media>/<slug>/index.mdx`.
 
@@ -66,9 +77,9 @@ By hand: copy a template from `templates/` to `src/content/<projects|media>/<slu
 - **Put images and clips in the same folder** and reference them by relative path (`./cover.jpg`).
 - `title` is the only required field. See `src/content.config.ts` for the full list.
 - **Media `kind`** is `photo`, `design`, or `video` and drives the filters on `/media`.
-- **Videos:** short clips as files beside the post (**25 MB max per file** on
-  Cloudflare Pages; the build fails with a clear message if one is bigger), or a
-  YouTube/Vimeo link via `embed:` for anything longer.
+- **Videos:** short clips as files beside the post (**50 MB max per file**; the
+  build fails with a clear message if one is bigger), or a YouTube/Vimeo link via
+  `embed:` for anything longer.
 
 ### Features baked in
 
@@ -84,56 +95,54 @@ By hand: copy a template from `templates/` to `src/content/<projects|media>/<slu
 - **Tags** drive the Topics section on `/projects` (`site.tagOrder` / `site.hiddenTopics`).
 - **Search palette** (⌘K / Ctrl+K) over titles, descriptions, tags, and bodies.
 
-## Hosting: Cloudflare
+## Hosting
 
-A Cloudflare Worker serving static files (`wrangler.jsonc` → `dist/`). There is no
-server code. Static file requests are free and unlimited, with a global CDN.
-One-time setup:
+GitHub Pages, deployed by `.github/workflows/deploy.yml` on every push to `main`.
+Limits to keep in mind: 1 GB published site, 100 GB/month bandwidth (soft), and
+GitHub warns about files over 50 MB. Build-time image optimization keeps pages
+small; the editor's 4000px downscale keeps the repo small.
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → import this repo.
-2. Build command `npm run build`; deploy command `npx wrangler deploy`.
-   The Worker's name must match `name` in `wrangler.jsonc`.
-3. Every push to `main` redeploys. The site is live at
-   `https://lukegoldmeyer-github-io.<your-subdomain>.workers.dev`; add a custom
-   domain under the Worker's **Settings → Domains & Routes**.
-4. Then update the site URL in three places: `site` in `astro.config.mjs`,
-   `site_url` / `display_url` in `public/admin/config.yml`, and the `SITE_URL`
-   repo variable (see Instagram below).
-5. Once it works, delete `.github/workflows/deploy.yml` (the old GitHub Pages
-   deploy) and turn off Pages in the GitHub repo settings.
+## Admin sign-in
 
-Limits to know: 25 MB per file and 20,000 files per deploy (free plan).
+**Now (GitHub only, no other services):** the sign-in screen asks for a GitHub
+fine-grained access token. The editor uses it to talk to GitHub directly from
+your browser; it's saved only in that browser. One-time per browser:
 
-## Admin (`/admin`)
+1. GitHub → Settings → Developer settings → **Fine-grained tokens** →
+   [Generate new token](https://github.com/settings/personal-access-tokens/new).
+2. Name it (e.g. "Site admin"), pick an expiration (you'll make a new one when
+   it expires).
+3. Repository access → **Only select repositories** → `lukegoldmeyer.github.io`.
+4. Permissions → Repository permissions → **Contents: Read and write**.
+5. Generate, copy, paste it into `/admin`.
 
-[Sveltia CMS](https://sveltiacms.app). The page is public, but saving anything
-requires a GitHub login with write access to this repo, so only you can publish.
+That token can only touch this one repo. If a device is lost, delete the token
+on GitHub and it stops working everywhere. **Sign out** in the editor forgets it
+in that browser.
 
-**Quick start (no setup):** on the login screen choose **Sign In with Token** and
-paste a GitHub fine-grained token: Repository access → only this repo;
-Permissions → **Contents: Read and write**. It is stored only in your browser.
+**Later (optional "Sign in with GitHub" button):** needs a small Cloudflare
+Worker that's already written (`worker/auth.ts`, `wrangler.jsonc`) but not used
+yet. When you move to Cloudflare:
 
-**Proper GitHub login button** (free, ~10 minutes):
+1. Create a Worker from this repo (deploy command `npx wrangler deploy`, no
+   build command). Its name must match `name` in `wrangler.jsonc`.
+2. GitHub → Settings → Developer settings → **OAuth Apps** → New: homepage = your
+   site, callback = `<worker URL>/auth/callback`. Generate a client secret.
+3. Add Worker *Secrets* `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`; put your
+   site's address in `ALLOWED_ORIGINS` in `wrangler.jsonc`.
+4. Set `AUTH_URL` in `src/admin/config.ts` to the Worker's URL. The button appears.
 
-1. Deploy [sveltia-cms-auth](https://github.com/sveltia/sveltia-cms-auth) to
-   Cloudflare Workers with its **Deploy to Cloudflare** button. Note the worker URL.
-2. GitHub → Settings → Developer settings → **OAuth Apps** → New. Callback URL:
-   `<worker URL>/callback`.
-3. In the worker's **Settings → Variables**: `GITHUB_CLIENT_ID`,
-   `GITHUB_CLIENT_SECRET` (encrypt it), and `ALLOWED_DOMAINS` = your site domain.
-4. In `public/admin/config.yml`, uncomment `base_url:` and set it to the worker URL.
-
-Optional extra lock: Cloudflare **Zero Trust → Access** can put an email-code
-login in front of `/admin/*` (free for up to 50 users).
+**Testing the editor locally:** `npm run dev`, then open
+<http://localhost:4321/admin/>. Saves still go to the real repo.
 
 ## Instagram
 
 Turn on **Also post to Instagram** for a media post in `/admin` (or set
 `instagram: { publish: true }`). After the push, `.github/workflows/instagram.yml`
-waits for Cloudflare to deploy, then posts the first 10 images as a single image
+waits for GitHub Pages to deploy, then posts the first 10 images as a single image
 or a carousel, and records it in `src/data/instagram.json` so it never reposts.
 Images are converted to 1440px JPEGs, padded with white (or cropped) to fit
-Instagram's 4:5 – 1.91:1 range.
+Instagram's 4:5 – 1.91:1 range. The editor previews that shape.
 
 One-time setup (Meta's dashboard wording changes often; the flow is the same):
 
@@ -146,7 +155,7 @@ One-time setup (Meta's dashboard wording changes often; the flow is the same):
 4. **Generate token** for your account. Copy the token and your Instagram user ID.
 5. In GitHub → repo **Settings → Secrets and variables → Actions**:
    - Secrets: `IG_USER_ID`, `IG_ACCESS_TOKEN`
-   - Variables: `SITE_URL` = your live site, e.g. `https://lukegoldmeyer.pages.dev`
+   - Variables: `SITE_URL` = `https://lukegoldmeyer.github.io`
    - Optional secret `GH_SECRETS_TOKEN`: fine-grained token on this repo with
      **Secrets: Read and write**. With it, the workflow refreshes the Instagram
      token monthly; without it, regenerate the token every 60 days.

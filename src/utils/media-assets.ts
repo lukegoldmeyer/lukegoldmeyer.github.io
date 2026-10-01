@@ -38,8 +38,8 @@ const coverByPostId = (() => {
 	return map;
 })();
 
-/** Cloudflare Pages rejects any single file over 25 MiB. */
-const MAX_VIDEO_BYTES = 25 * 1024 * 1024;
+/** GitHub warns above 50 MB and rejects files over 100 MB; keep clips small. */
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
 
 /** Self-hosted clips, keyed by `<slug>/<filename>`. Values are the built asset URLs. */
 const videosByPath = (() => {
@@ -55,7 +55,7 @@ const videosByPath = (() => {
 		const bytes = statSync(resolve(process.cwd(), 'src/utils', normalized)).size;
 		if (bytes > MAX_VIDEO_BYTES) {
 			throw new Error(
-				`${normalized} is ${(bytes / 1024 / 1024).toFixed(1)} MB. Cloudflare Pages allows 25 MB per file: ` +
+				`${normalized} is ${(bytes / 1024 / 1024).toFixed(1)} MB. GitHub allows 50 MB per file in practice: ` +
 					'compress it, or upload it to YouTube/Vimeo and use `embed:` instead.',
 			);
 		}
