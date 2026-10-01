@@ -2204,6 +2204,229 @@ b {
 	margin-top: 0.5em;
 }
 
+/* ---------- Prose: everything else Markdown/MDX can produce ---------- */
+
+.prose h4 {
+	font-family: 'Syne', sans-serif;
+	font-size: 1.05rem;
+	font-weight: 700;
+	color: var(--fg);
+	margin-top: 1.5em;
+}
+
+.prose h5,
+.prose h6 {
+	font-size: 0.8rem;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--fg);
+	margin-top: 1.5em;
+}
+
+.prose ol {
+	list-style: decimal;
+	padding-left: 1.4em;
+}
+
+.prose li > ul,
+.prose li > ol {
+	margin-top: 0.5em;
+}
+
+.prose li ul {
+	list-style: circle;
+}
+
+.prose li::marker {
+	color: var(--muted);
+}
+
+/* GFM task lists: - [x] done / - [ ] todo */
+.prose .contains-task-list {
+	list-style: none;
+	padding-left: 0.1em;
+}
+
+.prose .task-list-item input[type='checkbox'] {
+	accent-color: var(--accent);
+	margin: 0 0.6em 0 0;
+	transform: translateY(1px);
+}
+
+.prose hr {
+	border: 0;
+	border-top: 1px solid var(--border);
+	margin: 2.5em 0;
+}
+
+.prose del {
+	opacity: 0.65;
+}
+
+.prose u {
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+}
+
+.prose mark {
+	color: var(--fg);
+	background: color-mix(in srgb, var(--accent) 24%, transparent);
+	padding: 0.05em 0.25em;
+	border-radius: 3px;
+}
+
+.prose kbd {
+	font-family: ui-monospace, monospace;
+	font-size: 0.8em;
+	color: var(--fg);
+	background: var(--bg2);
+	border: 1px solid var(--border-hover);
+	border-bottom-width: 2px;
+	border-radius: 5px;
+	padding: 0.1em 0.45em;
+	white-space: nowrap;
+}
+
+.prose sup,
+.prose sub {
+	font-size: 0.75em;
+	line-height: 0;
+}
+
+.prose img {
+	border: 1px solid var(--border);
+	margin: 1.5em 0;
+}
+
+.prose table {
+	display: block;
+	overflow-x: auto;
+	width: 100%;
+	border-collapse: collapse;
+	font-size: 15px;
+}
+
+.prose th,
+.prose td {
+	padding: 0.6em 0.9em;
+	border-bottom: 1px solid var(--border);
+	vertical-align: top;
+}
+
+.prose th {
+	color: var(--fg);
+	font-weight: 600;
+	border-bottom-color: var(--border-hover);
+}
+
+/* Respect `:---:` / `---:` alignment; default to left. */
+.prose th:not([align]),
+.prose td:not([align]) {
+	text-align: left;
+}
+
+.prose details {
+	border: 1px solid var(--border);
+	padding: 0.8em 1.1em;
+}
+
+.prose summary {
+	cursor: pointer;
+	color: var(--fg);
+	font-weight: 600;
+}
+
+.prose details[open] > summary {
+	margin-bottom: 0.8em;
+}
+
+.prose details > * + * {
+	margin-top: 1em;
+}
+
+/* Footnotes: the [^1] marks and the list at the end. */
+.prose sup a {
+	border-bottom: none;
+}
+
+.prose .footnotes {
+	margin-top: 3em;
+	padding-top: 1.5em;
+	border-top: 1px solid var(--border);
+	font-size: 14px;
+}
+
+.prose .footnotes ol {
+	padding-left: 1.2em;
+}
+
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Callouts: > [!NOTE] / [!TIP] / [!IMPORTANT] / [!WARNING] / [!CAUTION] (src/utils/remark-callouts.mjs) */
+.prose .callout {
+	--callout: #4493f8;
+	border-left: 3px solid var(--callout);
+	background: color-mix(in srgb, var(--callout) 8%, transparent);
+	padding: 0.9em 1.2em;
+	color: var(--fg);
+}
+
+.prose .callout > * + * {
+	margin-top: 0.6em;
+}
+
+.prose .callout-title {
+	font-size: 12px;
+	font-weight: 600;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--callout);
+}
+
+.prose .callout--tip {
+	--callout: #3fb950;
+}
+
+.prose .callout--important {
+	--callout: #ab7df8;
+}
+
+.prose .callout--warning {
+	--callout: #d29922;
+}
+
+.prose .callout--caution {
+	--callout: #f85149;
+}
+
+/* Equations (KaTeX). Wide display math scrolls instead of overflowing the column. */
+.prose .katex {
+	color: var(--fg);
+	font-size: 1.05em;
+}
+
+.prose .katex-display {
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 0.3em 0;
+}
+
+/* Video embeds in the body use the same 16:9 frame as media posts. */
+.prose .media-embed {
+	margin: 1.5em 0;
+}
+
 /* ---------- Scroll reveal ---------- */
 
 [data-reveal] {

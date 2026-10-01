@@ -913,33 +913,207 @@ input[type='date'].adm-input {
 }
 
 .adm-md-bar {
+	position: sticky;
+	top: 110px;
+	z-index: 5;
 	display: flex;
 	flex-wrap: wrap;
-	gap: 2px;
+	align-items: center;
+	gap: 1px;
+	background: var(--bg);
 	border: 1px solid var(--border);
 	border-bottom: none;
 	padding: 4px;
 }
 
-.adm-md-bar button {
+.adm-md-btn {
 	font: inherit;
 	font-size: 12px;
-	min-width: 30px;
+	line-height: 1;
+	min-width: 28px;
+	height: 28px;
 	color: var(--muted);
 	background: none;
 	border: none;
-	padding: 5px 9px;
+	border-radius: 4px;
+	padding: 0 7px;
 	cursor: pointer;
+	white-space: nowrap;
 }
 
-.adm-md-bar button:hover {
+.adm-md-btn:hover,
+.adm-md-btn[aria-expanded='true'] {
 	color: var(--fg);
 	background: var(--bg2);
 }
 
+/* Buttons that look like what they do. */
+.adm-md-btn--bold {
+	font-weight: 700;
+}
+.adm-md-btn--italic {
+	font-style: italic;
+}
+.adm-md-btn--bolditalic {
+	font-weight: 700;
+	font-style: italic;
+}
+.adm-md-btn--strike {
+	text-decoration: line-through;
+}
+.adm-md-btn--underline {
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+.adm-md-btn--highlight {
+	color: var(--fg);
+	background: color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.adm-md-btn--code,
+.adm-md-btn--comment,
+.adm-md-btn--terminal {
+	font-family: ui-monospace, monospace;
+	font-size: 11px;
+}
+.adm-md-btn--cmd {
+	color: var(--fg);
+	border: 1px solid var(--border);
+	margin-left: auto;
+}
+
+.adm-md-sep {
+	width: 1px;
+	height: 18px;
+	margin: 0 4px;
+	background: var(--border);
+}
+
+.adm-md-menu {
+	position: relative;
+}
+
+.adm-md-pop {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 20;
+	min-width: 200px;
+	max-height: 320px;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	padding: 4px;
+	background: var(--bg2);
+	border: 1px solid var(--border-hover);
+	box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+}
+
+.adm-md-pop button {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 16px;
+	font: inherit;
+	font-size: 13px;
+	text-align: left;
+	color: var(--fg);
+	background: none;
+	border: none;
+	padding: 7px 10px;
+	cursor: pointer;
+}
+
+.adm-md-pop button:hover {
+	background: var(--bg);
+}
+
+.adm-md kbd {
+	font-family: ui-monospace, monospace;
+	font-size: 10px;
+	color: var(--muted);
+	border: 1px solid var(--border);
+	border-radius: 4px;
+	padding: 1px 5px;
+	white-space: nowrap;
+}
+
+.adm-md-wrap {
+	position: relative;
+}
+
 .adm-md-text {
+	display: block;
 	font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 	font-size: 13px;
+	tab-size: 2;
+}
+
+.adm-md-foot {
+	margin-top: 6px;
+}
+
+/* "/" command menu */
+.adm-md-palette {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	right: 8px;
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	max-height: 360px;
+	background: var(--bg2);
+	border: 1px solid var(--border-hover);
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+.adm-md-palette .adm-input {
+	border: none;
+	border-bottom: 1px solid var(--border);
+	background: transparent;
+}
+
+.adm-md-palette ul {
+	list-style: none;
+	overflow: auto;
+	padding: 4px;
+}
+
+.adm-md-palette li > .adm-hint {
+	padding: 10px;
+}
+
+.adm-md-palette button {
+	width: 100%;
+	display: grid;
+	grid-template-columns: 64px 1fr auto;
+	align-items: center;
+	gap: 10px;
+	font: inherit;
+	font-size: 13px;
+	text-align: left;
+	color: var(--fg);
+	background: none;
+	border: none;
+	padding: 7px 10px;
+	cursor: pointer;
+}
+
+.adm-md-palette button.is-active {
+	background: var(--bg);
+}
+
+.adm-md-pal-group {
+	font-size: 10px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+@media (max-width: 900px) {
+	.adm-md-bar {
+		position: static;
+	}
 }
 
 /* ---------- errors, toasts ---------- */

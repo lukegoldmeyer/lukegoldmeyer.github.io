@@ -15,7 +15,8 @@ import {
 	slugify,
 	validate,
 } from './content';
-import { Field, InstagramPanel, MarkdownField, PhotoGrid, Section, Segmented, SingleImage, TagInput, Toggle, VideoList } from './fields';
+import { Field, InstagramPanel, PhotoGrid, Section, Segmented, SingleImage, TagInput, Toggle, VideoList } from './fields';
+import { MarkdownEditor } from './MarkdownEditor';
 import type { CommitProgress, GitHub } from './github';
 import { checkVideo, prepareImage } from './images';
 import { Preview } from './Preview';
@@ -178,6 +179,7 @@ export function Editor(props: EditorProps) {
 							images: saved.images.map((a) => strip(a)!),
 							cover: strip(saved.cover) ?? null,
 							videos: saved.videos.map((v) => ({ ...v, file: strip(v.file) ?? undefined, poster: strip(v.poster) ?? undefined })),
+							bodyAssets: saved.bodyAssets.map((a) => strip(a)!),
 						}
 					: { ...saved, thumbnail: strip(saved.thumbnail) ?? null, bodyAssets: saved.bodyAssets.map((a) => strip(a)!) };
 			/* Same object identity for the cover so the ★ stays on the right photo. */
@@ -422,20 +424,16 @@ export function Editor(props: EditorProps) {
 					)}
 
 					<Section title={post.collection === 'media' ? 'Notes' : 'Write-up'}>
-						<MarkdownField
+						<MarkdownEditor
 							value={post.body}
-							rows={post.collection === 'projects' ? 22 : 8}
+							rows={post.collection === 'projects' ? 22 : 10}
 							onChange={(body) => update({ body })}
-							onInsertImage={
-								post.collection === 'projects'
-									? async (f) => {
-											const [asset] = await addImages([f]);
-											if (!asset) return undefined;
-											setPost((p) => (p.collection === 'projects' ? { ...p, bodyAssets: [...p.bodyAssets, asset] } : p));
-											return asset.name;
-										}
-									: undefined
-							}
+							onAddImage={async (f) => {
+								const [asset] = await addImages([f]);
+								if (!asset) return undefined;
+								setPost((p) => ({ ...p, bodyAssets: [...p.bodyAssets, asset] }) as Post);
+								return asset.name;
+							}}
 						/>
 					</Section>
 

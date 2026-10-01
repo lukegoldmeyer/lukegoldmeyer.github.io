@@ -3,7 +3,7 @@
  * src/pages/projects/[...slug].astro so the site's own CSS styles it exactly.
  * Keep the two in sync when changing either post page.
  */
-import { Marked } from 'marked';
+import { renderMarkdown } from './markdown';
 import { useMemo } from 'preact/hooks';
 import { rawUrl } from './config';
 import { type Asset, type MediaPost, type Post, type ProjectPost, postDir } from './content';
@@ -16,27 +16,22 @@ function formatDate(d: string, month: 'long' | 'short' = 'long') {
 	return isNaN(+date) ? d : date.toLocaleDateString('en-GB', { year: 'numeric', month, day: 'numeric', timeZone: 'UTC' });
 }
 
-/** Markdown → HTML, with `./file.jpg` links pointed at the post's files. MDX-only syntax is skipped. */
+/** Body → HTML, with `./file.jpg` paths pointed at the post's files (uploaded or in the repo). */
 function renderBody(post: Post): string {
 	const local = new Map<string, string>();
 	const assets =
-		post.collection === 'media' ? [...post.images, ...(post.cover ? [post.cover] : [])] : [...post.bodyAssets, ...(post.thumbnail ? [post.thumbnail] : [])];
+		post.collection === 'media' ? [...post.images, ...post.bodyAssets, ...(post.cover ? [post.cover] : [])] : [...post.bodyAssets, ...(post.thumbnail ? [post.thumbnail] : [])];
 	for (const a of assets) local.set(a.name, a.url);
 	const resolve = (href: string) => {
 		if (/^(https?:|data:|blob:|\/)/.test(href)) return href;
 		const name = href.replace(/^\.\//, '');
 		return local.get(name) ?? (post.slug ? rawUrl(`${postDir(post.collection, post.slug)}/${name}`) : href);
 	};
-	const marked = new Marked({
-		gfm: true,
-		walkTokens(token) {
-			if (token.type === 'image') token.href = resolve(token.href);
-		},
-	});
-	const source = post.body
-		.replace(/^(?:import|export)\s.+$/gm, '')
-		.replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
-	return marked.parse(source, { async: false }) as string;
+	try {
+		return renderMarkdown(post.body, resolve);
+	} catch (err) {
+		return `<p class="adm-error-text">Preview error: ${String((err as Error).message).replace(/</g, '&lt;')}</p>`;
+	}
 }
 
 function Img({ asset, alt }: { asset: Asset; alt: string }) {
@@ -47,7 +42,7 @@ function MediaPreview({ post }: { post: MediaPost }) {
 	const gallery = post.images;
 	const single =
 		gallery.length === 1 ? gallery[0] : gallery.length === 0 && post.videos.length === 0 ? post.cover : null;
-	const html = useMemo(() => renderBody(post), [post.body, post.images, post.cover, post.slug]);
+	const html = useMemo(() => renderBody(post), [post.body, post.images, post.bodyAssets, post.cover, post.slug]);
 	return (
 		<article class="photo-article">
 			<header class="photo-article-head">

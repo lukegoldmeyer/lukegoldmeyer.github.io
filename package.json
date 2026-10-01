@@ -15,8 +15,12 @@
     "@astrojs/mdx": "^5.0.3",
     "@astrojs/preact": "^6.0.5",
     "astro": "^6.1.7",
+    "katex": "^0.19.0",
     "marked": "^18.0.14",
-    "preact": "^10.29.8"
+    "marked-footnote": "^1.4.0",
+    "preact": "^10.29.8",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
   },
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",

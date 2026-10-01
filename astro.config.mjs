@@ -4,6 +4,9 @@ import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
 
 import preact from '@astrojs/preact';
+import rehypeKatex from 'rehype-katex';
+import remarkMath from 'remark-math';
+import remarkCallouts from './src/utils/remark-callouts.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,6 +20,9 @@ export default defineConfig({
         '/photo/[...slug]': '/media/[...slug]',
     },
     markdown: {
+        // `$math$` / `$$math$$` via KaTeX, and GitHub-style `> [!NOTE]` callouts. MDX inherits these.
+        remarkPlugins: [remarkMath, remarkCallouts],
+        rehypePlugins: [rehypeKatex],
         shikiConfig: {
             /**
              * Dual themes — Shiki emits CSS variables (`--shiki-light`, `--shiki-dark`)

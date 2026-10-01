@@ -6,6 +6,7 @@
  */
 import yaml from 'js-yaml';
 import { COLLECTIONS, type CollectionName, rawUrl } from './config';
+import { mdxProblems } from './markdown';
 
 /** A file belonging to a post: already in the repo (`url` only) or new (`file` set). */
 export interface Asset {
@@ -56,6 +57,8 @@ export interface MediaPost extends Common {
 	cover: Asset | null;
 	videos: VideoItem[];
 	instagram: { publish: boolean; caption: string; fit: IgFit };
+	/** Images uploaded for use inside the body (`![](./file.jpg)`). */
+	bodyAssets: Asset[];
 }
 
 export interface ProjectPost extends Common {
@@ -164,6 +167,7 @@ export function parseMedia(slug: string, text: string, files: string[]): MediaPo
 		cover,
 		videos,
 		instagram: { publish: ig.publish === true, caption: str(ig.caption), fit: ig.fit === 'crop' ? 'crop' : 'pad' },
+		bodyAssets: [],
 	};
 }
 
@@ -199,6 +203,7 @@ export function emptyMedia(): MediaPost {
 		cover: null,
 		videos: [],
 		instagram: { publish: false, caption: '', fit: 'pad' },
+		bodyAssets: [],
 	};
 }
 
@@ -309,6 +314,7 @@ export function referencedAssets(post: Post): Asset[] {
 			...post.images,
 			...(post.cover ? [post.cover] : []),
 			...post.videos.flatMap((v) => [v.mode === 'file' ? v.file : undefined, v.mode === 'file' ? v.poster : undefined]),
+			...post.bodyAssets,
 		].filter((a): a is Asset => !!a);
 	}
 	return [...(post.thumbnail ? [post.thumbnail] : []), ...post.bodyAssets];
@@ -331,5 +337,6 @@ export function validate(post: Post, existingSlugs: string[]): string[] {
 		if (post.instagram.publish && !post.images.length && !post.cover)
 			errors.push('Instagram needs at least one image.');
 	}
+	errors.push(...mdxProblems(post.body));
 	return errors;
 }

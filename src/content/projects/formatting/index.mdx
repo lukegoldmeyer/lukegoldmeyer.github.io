@@ -42,6 +42,11 @@ Combine freely: a **bold** phrase with an `inline snippet` that links to
 [Astro's docs](https://docs.astro.build). Both internal and external links
 render in the accent color with an underline.
 
+HTML tags fill the gaps Markdown doesn't cover: <u>underline</u>,
+<mark>highlighted text</mark>, H<sub>2</sub>O subscripts, x<sup>2</sup>
+superscripts, and keyboard keys like <kbd>Ctrl</kbd> + <kbd>K</kbd>.<br />
+That `<br />` forced a line break without starting a new paragraph.
+
 ## Lists
 
 Unordered, with nesting:
@@ -49,7 +54,7 @@ Unordered, with nesting:
 - First bullet
 - Second bullet with some **bold** inside
   - Nested bullet
-  - Another nested bullet with [a link](/photo)
+  - Another nested bullet with [a link](/media)
 - Third bullet
 
 Ordered, with nesting:
@@ -134,6 +139,26 @@ No highlighting, no language tag.
 > Keep the `>` prefix on the blank line between paragraphs so they stay as one
 > blockquote block.
 
+## Callouts
+
+Start a quote with `[!NOTE]`, `[!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, or
+`[!CAUTION]` to turn it into a colored callout box:
+
+> [!NOTE]
+> Useful context the reader should know.
+
+> [!TIP]
+> A shortcut or better way to do something.
+
+> [!IMPORTANT]
+> Something the reader shouldn't skip.
+
+> [!WARNING]
+> Something that could cause problems.
+
+> [!CAUTION]
+> Something that could break things or be dangerous.
+
 ## Horizontal rule
 
 Use three or more hyphens on a line alone:
@@ -178,6 +203,46 @@ Column alignment:
 | small        |  mid   |           big |
 | tiny         | middle |         huge  |
 
+## Equations
+
+Inline math sits in single dollar signs, like $E = mc^2$ or
+$\sigma = \frac{F}{A}$. Display math gets its own lines between double dollar
+signs:
+
+$$
+\int_0^{L} \frac{M(x)^2}{2EI} \, dx = U
+$$
+
+$$
+\begin{bmatrix} a & b \\ c & d \end{bmatrix}
+\begin{bmatrix} x \\ y \end{bmatrix}
+=
+\begin{bmatrix} ax + by \\ cx + dy \end{bmatrix}
+$$
+
+## Collapsible sections
+
+<details>
+<summary>Click to expand the full parts list</summary>
+
+Anything can go in here: **formatting**, lists, code, images.
+
+- 4× M3 × 8 mm screws
+- 1× 608 bearing
+
+</details>
+
+## Video embeds
+
+<div class="media-embed">
+  <iframe src="https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ" title="Video" loading="lazy" allowfullscreen></iframe>
+</div>
+
+## Hidden comments
+
+There's a comment right after this sentence that only shows up in the editor.
+{/* Like this one: notes to yourself that never appear on the site. */}
+
 ## Footnotes
 
 You can reference footnotes like this[^toc] or this[^pins] and Astro renders
@@ -199,6 +264,9 @@ https://github.com/lukegoldmeyer.
 
 Backslashes defeat markdown syntax when you want literal characters:
 \*not italic\*, \`not inline code\`, \[not a link\](noop.html).
+
+Posts are MDX, so curly braces and angle brackets are code too. Escape them
+when you mean the symbol: \{ \} and \<. (The editor warns you if you forget.)
 
 ## Search demo
 
