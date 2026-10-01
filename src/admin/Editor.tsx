@@ -17,7 +17,7 @@ import {
 } from './content';
 import { Field, InstagramPanel, PhotoGrid, Section, Segmented, SingleImage, TagInput, Toggle, VideoList } from './fields';
 import { MarkdownEditor } from './MarkdownEditor';
-import type { CommitProgress, GitHub } from './github';
+import { type CommitProgress, type GitHub, GitHubError, READ_ONLY_HELP } from './github';
 import { checkVideo, prepareImage } from './images';
 import { Preview } from './Preview';
 
@@ -195,7 +195,7 @@ export function Editor(props: EditorProps) {
 			toast(post.isNew ? 'Published. Live in about 2 minutes.' : 'Saved. Live in about 2 minutes.', 'ok');
 		} catch (err) {
 			setStatus({ state: 'idle' });
-			toast(`Couldn’t publish: ${(err as Error).message}`, 'error');
+			toast(err instanceof GitHubError && err.status === 403 ? READ_ONLY_HELP : `Couldn’t publish: ${(err as Error).message}`, 'error');
 		}
 	}
 
@@ -212,7 +212,7 @@ export function Editor(props: EditorProps) {
 			props.onDeleted();
 		} catch (err) {
 			setStatus({ state: 'idle' });
-			toast(`Couldn’t delete: ${(err as Error).message}`, 'error');
+			toast(err instanceof GitHubError && err.status === 403 ? READ_ONLY_HELP : `Couldn’t delete: ${(err as Error).message}`, 'error');
 		}
 	}
 

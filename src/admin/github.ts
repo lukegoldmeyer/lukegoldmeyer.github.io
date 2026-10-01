@@ -14,6 +14,10 @@ export class GitHubError extends Error {
 	}
 }
 
+/** Shown when the token can read but not write (GitHub: "Resource not accessible by personal access token"). */
+export const READ_ONLY_HELP =
+	'This token can read the site but isn’t allowed to publish. On GitHub, open Settings → Developer settings → Fine-grained tokens → your token, then set Repository access to “Only select repositories” → lukegoldmeyer.github.io, and Permissions → Contents to “Read and write”. Save it, then try again.';
+
 export interface TreeEntry {
 	path: string;
 	sha: string;
@@ -67,10 +71,19 @@ export class GitHub {
 		return this.request<{ login: string; avatar_url: string }>('/user');
 	}
 
-	/** True if this token can push to the repo. */
-	async canPush(): Promise<boolean> {
-		const repo = await this.request<{ permissions?: { push?: boolean } }>(this.repo(''));
-		return repo.permissions?.push === true;
+	/**
+	 * True if this token can write to the repo. The repo's `permissions` field describes
+	 * the *account*, not the token, so actually try a write: upload an empty blob. It isn't
+	 * attached to any commit, so the repo doesn't change (GitHub discards it later).
+	 */
+	async canWrite(): Promise<boolean> {
+		try {
+			await this.request(this.repo('/git/blobs'), { method: 'POST', body: JSON.stringify({ content: '', encoding: 'utf-8' }) });
+			return true;
+		} catch (err) {
+			if (err instanceof GitHubError && (err.status === 403 || err.status === 404)) return false;
+			throw err;
+		}
 	}
 
 	async head(): Promise<{ commit: string; tree: string }> {

@@ -4,7 +4,7 @@ import { type Session, loadSession, saveSession, signInWithGitHub, signOut } fro
 import { AUTH_URL, COLLECTIONS, type CollectionName, INSTAGRAM_STATE, REPO, SITE_URL, rawUrl } from './config';
 import { type Post, emptyMedia, emptyProject, parseMedia, parseProject } from './content';
 import { Editor } from './Editor';
-import { GitHub, GitHubError, type TreeEntry } from './github';
+import { GitHub, GitHubError, READ_ONLY_HELP, type TreeEntry } from './github';
 import { KIND_LABELS, formatDate } from './Preview';
 
 interface Summary {
@@ -143,10 +143,22 @@ function SignIn({ onSession }: { onSession: (s: Session) => void }) {
 		setError('');
 		setPending(true);
 		try {
-			const user = await new GitHub(token.trim()).getUser();
+			const gh = new GitHub(token.trim());
+			let user;
+			try {
+				user = await gh.getUser();
+			} catch {
+				setError('GitHub didn’t accept that token. Check you copied all of it (it starts with github_pat_).');
+				return;
+			}
+			/* Catch read-only tokens now rather than at the first Publish. */
+			if (!(await gh.canWrite())) {
+				setError(READ_ONLY_HELP);
+				return;
+			}
 			onSession({ token: token.trim(), login: user.login, avatar: user.avatar_url });
-		} catch {
-			setError('That token didn’t work. Check it has access to this repo.');
+		} catch (err) {
+			setError(`Couldn’t reach GitHub: ${(err as Error).message}`);
 		} finally {
 			setPending(false);
 		}
@@ -349,12 +361,10 @@ export default function App() {
 
 	useEffect(() => {
 		if (!gh) return;
-		gh.canPush()
-			.then((ok) => {
-				if (!ok) setLoadError(`@${session?.login} can’t push to ${REPO}.`);
-			})
-			.catch(() => {});
-		refresh();
+		/* Check write access first; loading the list would otherwise clear the warning. */
+		gh.canWrite()
+			.catch(() => true)
+			.then((ok) => (ok ? refresh() : setLoadError(READ_ONLY_HELP)));
 	}, [gh]);
 
 	/* Load the post the route points at. */
@@ -432,9 +442,31 @@ export default function App() {
 				) : loadError ? (
 					<div class="adm-signin">
 						<p class="adm-error-text">{loadError}</p>
-						<button type="button" class="adm-btn" onClick={refresh}>
-							Try again
-						</button>
+						<div class="adm-row">
+							<button
+								type="button"
+								class="adm-btn adm-btn--primary"
+								onClick={async () => {
+									if (loadError === READ_ONLY_HELP && gh && !(await gh.canWrite().catch(() => false))) return;
+									setLoadError('');
+									refresh();
+								}}
+							>
+								Try again
+							</button>
+							<button
+								type="button"
+								class="adm-btn"
+								onClick={async () => {
+									await signOut(session);
+									setSession(null);
+									setRepo(null);
+									setLoadError('');
+								}}
+							>
+								Sign out (use a different token)
+							</button>
+						</div>
 					</div>
 				) : !repo ? (
 					<p class="adm-loading">Loading posts…</p>
