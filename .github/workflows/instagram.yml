@@ -1,0 +1,64 @@
+name: Instagram
+
+on:
+  # A media post changed: publish any newly opted-in posts once Cloudflare has deployed them.
+  push:
+    branches: [main]
+    paths: ['src/content/media/**']
+  workflow_dispatch:
+  # Monthly: refresh the long-lived token (they expire after 60 days).
+  schedule:
+    - cron: '0 12 1 * *'
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Publish to Instagram
+        run: node scripts/instagram-publish.mjs
+        env:
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          SITE_URL: ${{ vars.SITE_URL }}
+      - name: Record published posts
+        # Runs even if one post failed, so the ones that succeeded are never reposted.
+        if: always()
+        run: |
+          git add src/data/instagram.json
+          git diff --cached --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Record Instagram posts [skip ci]"
+          git pull --rebase
+          git push
+
+  refresh-token:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Refresh long-lived token
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          # Fine-grained token with "Secrets: read and write" on this repo, so the job can save the new token.
+          GH_TOKEN: ${{ secrets.GH_SECRETS_TOKEN }}
+        run: |
+          if [ -z "$IG_ACCESS_TOKEN" ] || [ -z "$GH_TOKEN" ]; then
+            echo "IG_ACCESS_TOKEN or GH_SECRETS_TOKEN not set; skipping."; exit 0
+          fi
+          NEW=$(curl -sf "https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=$IG_ACCESS_TOKEN" | jq -r .access_token)
+          [ -n "$NEW" ] && [ "$NEW" != "null" ] || { echo "Refresh failed"; exit 1; }
+          gh secret set IG_ACCESS_TOKEN --repo "$GITHUB_REPOSITORY" --body "$NEW"
+          echo "Token refreshed."

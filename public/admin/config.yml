@@ -1,0 +1,119 @@
+# Sveltia CMS config — https://sveltiacms.app/en/docs
+# Field names here must match the schemas in src/content.config.ts.
+
+backend:
+  name: github
+  repo: lukegoldmeyer/lukegoldmeyer.github.io
+  branch: main
+  # GitHub login goes through a tiny Cloudflare Worker (sveltia-cms-auth). Until it is
+  # deployed, use "Sign In with Token" on the login screen with a fine-grained GitHub
+  # token (Contents: read & write on this repo only). See README → Admin.
+  # base_url: https://sveltia-cms-auth.<your-subdomain>.workers.dev
+
+# Fallback for uploads outside a post; posts store their files in their own folder.
+media_folder: public/uploads
+public_folder: /uploads
+
+site_url: https://lukegoldmeyer.github.io
+display_url: https://lukegoldmeyer.github.io
+
+collections:
+  - name: media
+    label: Media
+    label_singular: Media post
+    description: Photo, design, and video posts shown on /media.
+    folder: src/content/media
+    path: '{{slug}}/index'
+    extension: mdx
+    format: yaml-frontmatter
+    create: true
+    # Files uploaded in a post are saved next to its index.mdx.
+    media_folder: ''
+    public_folder: ''
+    sortable_fields: [pubDate, title, kind]
+    view_filters:
+      - { label: Photo, field: kind, pattern: photo }
+      - { label: Design, field: kind, pattern: design }
+      - { label: Video, field: kind, pattern: video }
+    summary: '{{title}} · {{kind}} · {{pubDate}}'
+    fields:
+      - { name: title, label: Title, widget: string }
+      - name: kind
+        label: Type
+        widget: select
+        options:
+          - { label: Photo, value: photo }
+          - { label: Graphic design, value: design }
+          - { label: Video, value: video }
+        default: photo
+      - { name: description, label: Description, widget: text, required: false, hint: 'One or two sentences, shown on tiles and under the title.' }
+      - { name: location, label: Location, widget: string, required: false }
+      - { name: pubDate, label: Published, widget: datetime, type: date, picker_utc: true, required: false }
+      - { name: updatedDate, label: Updated, widget: datetime, type: date, picker_utc: true, required: false }
+      - { name: tags, label: Tags, widget: list, required: false, hint: 'Also become hashtags in the default Instagram caption.' }
+      - { name: cover, label: Cover image, widget: image, required: false, hint: 'Tile image on listings. Defaults to the first image below (or the first video poster).' }
+      - name: images
+        label: Images
+        label_singular: Image
+        widget: list
+        required: false
+        hint: 'Shown in this order. 2+ images render as a two-column grid.'
+        fields:
+          - { name: src, label: Image, widget: image }
+          - { name: alt, label: Alt text, widget: string, required: false, hint: 'Short description for screen readers.' }
+      - name: videos
+        label: Videos
+        label_singular: Video
+        widget: list
+        required: false
+        hint: 'Use a file for short clips (25 MB max each) or a YouTube/Vimeo link for anything longer — one or the other per video.'
+        fields:
+          - { name: src, label: Video file, widget: file, required: false, accept: 'video/mp4,video/webm,video/quicktime,.mp4,.webm,.mov,.m4v' }
+          - { name: embed, label: YouTube / Vimeo link, widget: string, required: false }
+          - { name: poster, label: Poster image, widget: image, required: false, hint: 'Still frame shown before a video file plays.' }
+          - { name: caption, label: Caption, widget: string, required: false }
+      - { name: pin, label: Featured, widget: boolean, default: false, required: false, hint: 'Shows under Featured on /media and adds a pin icon.' }
+      - { name: hidden, label: Hidden, widget: boolean, default: false, required: false, hint: 'Leave out of listings and search. The direct URL still works.' }
+      - name: instagram
+        label: Instagram
+        widget: object
+        collapsed: true
+        required: false
+        fields:
+          - { name: publish, label: Also post to Instagram, widget: boolean, default: false, hint: 'Posts once, after the site finishes deploying. Up to the first 10 images.' }
+          - { name: caption, label: Caption, widget: text, required: false, hint: 'Leave blank to use title, description, and tags as hashtags.' }
+          - name: fit
+            label: Fit
+            widget: select
+            default: pad
+            required: false
+            hint: 'Instagram only allows 4:5 to 1.91:1. Pad adds white borders; crop trims to fit.'
+            options:
+              - { label: Pad with borders, value: pad }
+              - { label: Crop, value: crop }
+      - { name: body, label: Body, widget: markdown, required: false }
+
+  - name: projects
+    label: Projects
+    label_singular: Project
+    description: Project write-ups shown on /projects.
+    folder: src/content/projects
+    path: '{{slug}}/index'
+    extension: mdx
+    format: yaml-frontmatter
+    create: true
+    media_folder: ''
+    public_folder: ''
+    sortable_fields: [pubDate, title]
+    summary: '{{title}} · {{pubDate}}'
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: description, label: Description, widget: text, required: false }
+      - { name: pubDate, label: Published, widget: datetime, type: date, picker_utc: true, required: false }
+      - { name: updatedDate, label: Updated, widget: datetime, type: date, picker_utc: true, required: false }
+      - { name: tags, label: Tags, widget: list, required: false, hint: 'Drive the Topics sections on /projects.' }
+      - { name: thumbnail, label: Thumbnail, widget: image, required: false }
+      - { name: wip, label: Work in progress, widget: boolean, default: false, required: false }
+      - { name: pin, label: Pinned, widget: boolean, default: false, required: false }
+      - { name: hidden, label: Hidden, widget: boolean, default: false, required: false }
+      - { name: body, label: Body, widget: markdown, required: false }

@@ -1,11 +1,12 @@
 ---
 # =============================================================================
-# PHOTO POST TEMPLATE
+# MEDIA POST TEMPLATE (photo, graphic design, or video)
 #
-# Copy this whole file to:  src/content/photos/<slug>/index.mdx
-# The folder name becomes the URL:  /photo/<slug>/
-# Drop all photo files you want into that same folder, then list them in
-# `images` below in the order you want them to render.
+# Easiest: create posts at /admin instead. To do it by hand, copy this file to
+#   src/content/media/<slug>/index.mdx
+# The folder name becomes the URL:  /media/<slug>/
+# Drop the image / video files into that same folder, then list them in
+# `images` / `videos` below in the order you want them to render.
 #
 # --- Frontmatter rules ---
 # * Only `title` is strictly required.
@@ -15,6 +16,12 @@
 
 # ── REQUIRED ────────────────────────────────────────────────────────────────
 title: 'Golden Hour'
+
+# ── TYPE ────────────────────────────────────────────────────────────────────
+# photo | design | video. Drives the filter chips on /media. Default: photo.
+# Video posts show their videos above any images.
+
+kind: photo
 
 # ── OPTIONAL STRINGS ────────────────────────────────────────────────────────
 
@@ -31,23 +38,23 @@ pubDate: 2026-04-10
 updatedDate: 2026-04-12
 
 # ── TAGS ────────────────────────────────────────────────────────────────────
-# Freeform, not currently used to group photo posts but kept for future-proofing.
+# Freeform. Also become hashtags in the default Instagram caption.
 
 tags: ['Cycling', 'Landscape']
 
 # ── COVER IMAGE ─────────────────────────────────────────────────────────────
-# Relative path from this .mdx. If omitted, the first image in `images[]` is
-# used as the /photo index tile cover.
+# Relative path from this .mdx. If omitted, the first image in `images[]` (then
+# the first video poster) is used as the tile cover on /media and the home page.
 
 cover: ./01-wide.jpg
 
 # ── FLAGS ───────────────────────────────────────────────────────────────────
 
-# `pin: true` — shows in the "Featured" column on /photo + adds a pin icon.
+# `pin: true` — shows in the "Featured" column on /media + adds a pin icon.
 pin: false
 
 # ── GALLERY ─────────────────────────────────────────────────────────────────
-# Ordered list of photos. Render order = list order.
+# Ordered list of images. Render order = list order.
 # Each entry is either:
 #   - a bare relative path, e.g. `- ./frame.jpg`
 #   - an object with optional alt text (preferred for accessibility):
@@ -67,10 +74,30 @@ images:
     alt: 'Rider silhouette against the sky.'
   - ./03-detail.jpg
   - ./04-detail.jpg
+
+# ── VIDEOS ──────────────────────────────────────────────────────────────────
+# Each entry is EITHER a file beside this mdx (short clips, 25 MB max per file
+# on Cloudflare Pages) OR a YouTube / Vimeo link for anything longer.
+
+videos:
+  - src: ./clip.mp4
+    poster: ./01-wide.jpg
+    caption: 'Optional caption.'
+  - embed: 'https://youtu.be/VIDEO_ID'
+
+# ── INSTAGRAM ───────────────────────────────────────────────────────────────
+# publish: true cross-posts once, after the site deploys (first 10 images).
+# caption defaults to title + description + tags as hashtags.
+# fit: pad (white borders) or crop, to fit Instagram's 4:5 – 1.91:1 limits.
+
+instagram:
+  publish: false
+  caption: ''
+  fit: pad
 ---
 
 {/* Everything below the closing --- is the article body. MDX = Markdown + JSX.
-     Body text is optional for photo posts — a pure gallery is totally fine. */}
+     Body text is optional for media posts — a pure gallery is totally fine. */}
 
 import { Image } from 'astro:assets'
 
@@ -80,7 +107,7 @@ container.
 
 ## Headings
 
-Use `h2` / `h3` for structure in the body if you want; photo articles do not
+Use `h2` / `h3` for structure in the body if you want; media posts do not
 show a table of contents.
 
 ## Text formatting
@@ -118,7 +145,7 @@ Task list:
 
 ---
 
-## Code block (if you ever need one in a photo post)
+## Code block (if you ever need one in a media post)
 
 ```yaml
 exif:

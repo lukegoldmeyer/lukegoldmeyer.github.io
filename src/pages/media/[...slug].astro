@@ -1,0 +1,152 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image, getImage } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, getEntry, render } from 'astro:content';
+import { site } from '../../site';
+import {
+	kindLabels,
+	resolveMediaCover,
+	resolveMediaImage,
+	resolveMediaVideos,
+} from '../../utils/media-assets';
+
+export async function getStaticPaths() {
+	const posts = await getCollection('media');
+	return posts.map((post) => ({ params: { slug: post.id } }));
+}
+
+const slug = Astro.params.slug;
+if (slug === undefined) return Astro.redirect('/media');
+const post = await getEntry('media', slug);
+if (!post) return Astro.redirect('/media');
+const { Content } = await render(post);
+
+const gallery = (post.data.images ?? [])
+	.map((entry) => resolveMediaImage(post.id, entry))
+	.filter((v): v is { img: ImageMetadata; alt?: string } => !!v);
+
+const videos = await Promise.all(
+	resolveMediaVideos(post).map(async (v) =>
+		v.type === 'file' && v.poster
+			? { ...v, posterSrc: (await getImage({ src: v.poster, width: Math.min(v.poster.width, 1920), format: 'webp' })).src }
+			: { ...v, posterSrc: undefined },
+	),
+);
+
+/** Hero image shown when the post has 0 or 1 gallery images (and no videos to lead with). */
+const cover = resolveMediaCover(post);
+const single: { img: ImageMetadata; alt: string } | undefined =
+	gallery.length === 1
+		? { img: gallery[0].img, alt: gallery[0].alt ?? post.data.title }
+		: gallery.length === 0 && videos.length === 0 && cover
+			? { img: cover, alt: `${post.data.title} — cover` }
+			: undefined;
+
+/** Large version for the lightbox, so enlarging doesn't load the multi-MB original. */
+async function fullSrc(img: ImageMetadata) {
+	const out = await getImage({ src: img, width: Math.min(img.width, 2560), format: 'webp', quality: 85 });
+	return out.src;
+}
+const singleFull = single ? await fullSrc(single.img) : undefined;
+const galleryFull = gallery.length >= 2 ? await Promise.all(gallery.map((g) => fullSrc(g.img))) : [];
+
+/** Video posts lead with their videos; photo and design posts lead with images. */
+const videosFirst = post.data.kind === 'video';
+
+function formatDate(d: Date | undefined) {
+	if (!d) return undefined;
+	return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+}
+---
+
+<BaseLayout title={`${post.data.title} — ${site.name}`} description={post.data.description || post.data.title}>
+	<article class="photo-article">
+		<header class="photo-article-head">
+			<div class="article-heading article-heading--centered">
+				<p class="article-meta">
+					<span>{kindLabels[post.data.kind]}</span>
+					{post.data.pubDate ? <span class="meta-dot">·</span> : null}
+					{post.data.pubDate ? <span>{formatDate(post.data.pubDate)}</span> : null}
+					{post.data.location ? <span class="meta-dot">·</span> : null}
+					{post.data.location ? <span>{post.data.location}</span> : null}
+				</p>
+				<h1>{post.data.title}</h1>
+			</div>
+			{post.data.description ? <p class="lead">{post.data.description}</p> : null}
+		</header>
+
+		<div class:list={['media-body', videosFirst && 'media-body--videos-first']}>
+			{
+				videos.length > 0 ? (
+					<div class="media-videos">
+						{videos.map((v) => (
+							<figure class="media-video">
+								{v.type === 'file' ? (
+									<video
+										src={v.url}
+										poster={v.posterSrc}
+										controls
+										playsinline
+										preload="metadata"
+									/>
+								) : (
+									<div class="media-embed">
+										<iframe
+											src={v.url}
+											title={v.caption ?? post.data.title}
+											loading="lazy"
+											allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+											allowfullscreen
+										/>
+									</div>
+								)}
+								{v.caption ? <figcaption>{v.caption}</figcaption> : null}
+							</figure>
+						))}
+					</div>
+				) : null
+			}
+
+			<div class="media-images">
+				{
+					single ? (
+						<figure class="photo-single">
+							<Image
+								src={single.img}
+								alt={single.alt}
+								widths={[800, 1200, 1800, 2400]}
+								sizes="(max-width: 1100px) 100vw, 1100px"
+								loading="eager"
+								data-full={singleFull}
+							/>
+						</figure>
+					) : null
+				}
+
+				{
+					gallery.length >= 2 ? (
+						<div class="photo-masonry" role="list">
+							{gallery.map((g, i) => (
+								<figure class="photo-masonry-item" role="listitem">
+									<Image
+										src={g.img}
+										alt={g.alt ?? `${post.data.title} — ${i + 1}`}
+										widths={[600, 900, 1200, 1800]}
+										sizes="(max-width: 640px) 100vw, 550px"
+										loading={i < 2 ? 'eager' : 'lazy'}
+										data-full={galleryFull[i]}
+									/>
+								</figure>
+							))}
+						</div>
+					) : null
+				}
+			</div>
+		</div>
+
+		<div class="prose photo-prose">
+			<Content />
+		</div>
+	</article>
+</BaseLayout>

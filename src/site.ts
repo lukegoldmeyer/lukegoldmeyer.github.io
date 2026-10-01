@@ -9,7 +9,7 @@ I am a student at the Texas A&M College of Engineering, Fightin' Texas Aggie cla
 
 Photography and videography are two of my favorite creative outlets. I enjoy capturing the mundane and making it look beautiful, and I enjoy capturing the beautiful and making it look breathtaking.
 
-Music is an irreplacible part of my life, from piano performance to just listening. Find me on Apple Music.
+Music is an irreplaceable part of my life, from piano performance to just listening. Find me on Apple Music.
 
 I don't want to rot indoors, so I like to get out. Cycling is my weapon of choice. I ride road and mountain, but I usually prefer the latter. I enjoyed my time working at Velo Republic Bikes for a year or so, and I am thankful to have been a part of the NTX NICA cross country MTB team.
 
@@ -29,12 +29,12 @@ This site serves to present my work, in both project blogs and photography showc
 	workIntro: "What's New",
 	workSectionTitle: 'Recent Projects ',
 	projectsIntro: 'Projects',
-	photoIntro: 'Photography',
+	mediaIntro: 'Media',
 
 	nav: [
 		{ href: '/', label: 'Home' },
 		{ href: '/projects', label: 'Projects' },
-		{ href: '/photo', label: 'Photo' },
+		{ href: '/media', label: 'Media' },
 		{ href: '/#about', label: 'About' },
 		{ href: '/#contact', label: 'Social' },
 	],

@@ -2,6 +2,7 @@ import type { APIRoute } from 'astro';
 import { getCollection } from 'astro:content';
 import { entryIsPublic } from '../utils/content-visibility';
 import { sortProjectsByRecency } from '../utils/sort-projects';
+import { kindLabels } from '../utils/media-kinds';
 
 /**
  * Build-time search index. Served as a static JSON file at /search.json and
@@ -60,7 +61,7 @@ function truncate(s: string, n: number): string {
 
 export const GET: APIRoute = async () => {
 	const projects = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
-	const photos = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
+	const media = sortProjectsByRecency(await getCollection('media', entryIsPublic));
 
 	const items = [
 		...projects.map((p) => ({
@@ -73,9 +74,9 @@ export const GET: APIRoute = async () => {
 			pinned: p.data.pin === true,
 			body: truncate(stripMarkdown(p.body ?? ''), BODY_LIMIT),
 		})),
-		...photos.map((p) => ({
-			type: 'Photo' as const,
-			url: `/photo/${p.id}/`,
+		...media.map((p) => ({
+			type: kindLabels[p.data.kind],
+			url: `/media/${p.id}/`,
 			title: p.data.title,
 			description: p.data.description || '',
 			tags: p.data.tags ?? [],

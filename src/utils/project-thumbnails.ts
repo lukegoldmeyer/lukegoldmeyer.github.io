@@ -24,12 +24,9 @@ export function resolveProjectThumbnail(
 	projectId: string,
 	fromCollection: ImageMetadata | string | undefined,
 ): ImageMetadata | undefined {
-	const fromGlob = thumbnailByProjectId.get(projectId);
-	if (fromGlob) {
-		return fromGlob;
-	}
+	/* The `thumbnail` field wins; a `thumbnail.*` file in the folder is the fallback. */
 	if (fromCollection && typeof fromCollection === 'object') {
 		return fromCollection;
 	}
-	return undefined;
+	return thumbnailByProjectId.get(projectId);
 }

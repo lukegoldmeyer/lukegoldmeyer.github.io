@@ -1,0 +1,53 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import { kindLabels, resolveMediaCover } from '../utils/media-assets';
+import Pin from './Pin.astro';
+
+interface Props {
+	post: CollectionEntry<'media'>;
+}
+
+const { post } = Astro.props;
+const cover = resolveMediaCover(post);
+const pinned = post.data.pin === true;
+
+function formatDate(d: Date | undefined) {
+	if (!d) return '—';
+	return d.toLocaleDateString('en-GB', { year: 'numeric', month: 'short', day: 'numeric', timeZone: 'UTC' });
+}
+---
+
+<a
+	class:list={['proj-card', 'proj-card--photo', !cover && 'proj-card--no-thumb']}
+	href={`/media/${post.id}/`}
+>
+	{
+		cover ? (
+			<div class="proj-card-media">
+				<Image
+					src={cover}
+					alt={`${post.data.title} — cover`}
+					widths={[480, 800, 1200]}
+					sizes="(max-width: 900px) 100vw, 45vw"
+					loading="lazy"
+				/>
+			</div>
+		) : null
+	}
+	<div class="proj-card-body">
+		<div class="proj-card-head">
+			<h3>
+				{post.data.title}
+				<Pin pinned={pinned} />
+			</h3>
+			<time class="proj-card-date" datetime={post.data.pubDate?.toISOString()}>
+				{formatDate(post.data.pubDate)}
+			</time>
+		</div>
+		{post.data.description ? <p class="proj-card-desc">{post.data.description}</p> : null}
+		<p class="proj-card-loc">
+			{kindLabels[post.data.kind]}{post.data.location ? ` · ${post.data.location}` : ''}
+		</p>
+	</div>
+</a>

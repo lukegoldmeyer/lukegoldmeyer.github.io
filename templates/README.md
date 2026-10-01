@@ -1,13 +1,14 @@
 # Post templates
 
-Two starter files with every field your content collections accept, fully
+The easiest way to write posts is the CMS at `/admin` (see the main README).
+These are two starter files for writing by hand, with every field your content collections accept, fully
 annotated. They intentionally live **outside** `src/content/` so the Astro
 content loader won't try to treat them as real posts.
 
 | Template             | Drop into                 | Becomes URL                      |
 | -------------------- | ------------------------- | -------------------------------- |
 | `project-post.mdx`   | `src/content/projects/<slug>/index.mdx` | `/projects/<slug>/` |
-| `photo-post.mdx`     | `src/content/photos/<slug>/index.mdx`   | `/photo/<slug>/`    |
+| `media-post.mdx`     | `src/content/media/<slug>/index.mdx`    | `/media/<slug>/`    |
 
 ## Workflow
 
@@ -28,6 +29,5 @@ content loader won't try to treat them as real posts.
 - **Folder name = slug.** Renaming the folder changes the URL. Do it while the
   dev server is stopped to avoid stale content-module cache issues.
 - **Images are referenced relative to the mdx file**, e.g. `./cover.jpg`.
-- If a project has a `thumbnail.{jpg,png,webp,…}` file sitting beside its mdx
-  it will be auto-picked even if you don't list it in frontmatter. Delete the
-  file if you don't want a thumbnail.
+- If a project has no `thumbnail` field but a `thumbnail.{jpg,png,webp,…}` file
+  sits beside its mdx, that file is used. Same for `cover.*` in media posts.

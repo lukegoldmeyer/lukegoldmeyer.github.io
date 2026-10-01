@@ -1,11 +1,12 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { getCollection } from 'astro:content';
 import { site } from '../site';
 import { resolveProjectThumbnail } from '../utils/project-thumbnails';
 import { entryIsPublic } from '../utils/content-visibility';
 import { sortProjectsByRecency } from '../utils/sort-projects';
-import { resolvePhotoCover } from '../utils/photo-assets';
+import { kindLabels, resolveMediaCover } from '../utils/media-assets';
 import Pin from '../components/Pin.astro';
 
 const nameParts = site.name.trim().split(/\s+/);
@@ -28,14 +29,15 @@ const marqueeSkills = [...skillsList, ...skillsList];
 const allProjects = sortProjectsByRecency(await getCollection('projects', entryIsPublic));
 const recentProjects = allProjects.slice(0, 3);
 
-const allPhotos = sortProjectsByRecency(await getCollection('photos', entryIsPublic));
-const recentPhotos = allPhotos.slice(0, 3);
+const allMedia = sortProjectsByRecency(await getCollection('media', entryIsPublic));
+const recentMedia = allMedia.slice(0, 3);
 
 function formatProjectDate(d: Date) {
 	return d.toLocaleDateString('en-GB', {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric',
+		timeZone: 'UTC',
 	});
 }
 
@@ -157,14 +159,13 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 								{hasThumb ? (
 									<div class="pcard-vis">
 										<div class:list={['pcard-bg', `pcard-bg--${index % 4}`]} />
-										<img
+										<Image
 											class="pcard-img"
-											src={thumb.src}
+											src={thumb}
 											alt={`${project.data.title} — preview`}
-											width={thumb.width}
-											height={thumb.height}
+											widths={[640, 960, 1440]}
+											sizes="(max-width: 900px) 100vw, 50vw"
 											loading="lazy"
-											decoding="async"
 										/>
 										<div class="pcard-img-overlay" />
 										<div class="p-arrow" aria-hidden="true">
@@ -229,39 +230,39 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 		}
 	</section>
 
-	<section id="photos" aria-label="Recent photography">
+	<section id="photos" aria-label="Recent media">
 		<div class="s-header">
 			<div>
-				<p class="s-label">Photography</p>
+				<p class="s-label">{site.mediaIntro}</p>
 				<h2 class="s-title">
 					<span class="tl">
-						<span>Recent Photos </span>
+						<span>Recent Media </span>
 					</span>
 				</h2>
 			</div>
 		</div>
 		{
-			recentPhotos.length ? (
+			recentMedia.length ? (
 				<div class="photo-home-grid">
-					{recentPhotos.map((post) => {
-						const cover = resolvePhotoCover(post.id, post.data.cover);
+					{recentMedia.map((post) => {
+						const cover = resolveMediaCover(post);
 						const date = post.data.pubDate ? formatProjectDate(post.data.pubDate) : '';
 						const pinned = post.data.pin === true;
 						const hasCover = !!cover;
 						return (
 							<a
 								class:list={['photo-home-card', !hasCover && 'photo-home-card--no-cover']}
-								href={`/photo/${post.id}/`}
+								href={`/media/${post.id}/`}
+								style={`--ar: ${cover ? (cover.width / cover.height).toFixed(4) : '1.5'}`}
 							>
 								{hasCover ? (
 									<div class="photo-home-media">
-										<img
-											src={cover.src}
+										<Image
+											src={cover}
 											alt={`${post.data.title} — cover`}
-											width={cover.width}
-											height={cover.height}
+											widths={[480, 800, 1200, 1600]}
+											sizes="(max-width: 560px) 100vw, 45vw"
 											loading="lazy"
-											decoding="async"
 										/>
 										<div class="photo-home-overlay" aria-hidden="true" />
 										<div class="p-arrow" aria-hidden="true">
@@ -282,7 +283,10 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 										{post.data.title}
 										<Pin pinned={pinned} />
 									</h3>
-									{date ? <span class="photo-home-date">{date}</span> : null}
+									<span class="photo-home-date">
+										{kindLabels[post.data.kind]}
+										{date ? ` · ${date}` : ''}
+									</span>
 								</div>
 							</a>
 						);
@@ -290,18 +294,18 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 				</div>
 			) : (
 				<p class="work-empty">
-					No photo posts yet. Add a folder under{' '}
-					<code class="work-empty-code">src/content/photos/&lt;slug&gt;/</code> with{' '}
+					No media posts yet. Add a folder under{' '}
+					<code class="work-empty-code">src/content/media/&lt;slug&gt;/</code> with{' '}
 					<code class="work-empty-code">index.md</code> or <code class="work-empty-code">index.mdx</code>{' '}
 					and image files beside it.
 				</p>
 			)
 		}
 		{
-			recentPhotos.length > 0 && (
+			recentMedia.length > 0 && (
 				<div class="section-cta-wrap">
-					<a class="section-cta" href="/photo" aria-label="All photos">
-						<span class="section-cta-text">All Photos</span>
+					<a class="section-cta" href="/media" aria-label="All media">
+						<span class="section-cta-text">All Media</span>
 						<span class="section-cta-arrow" aria-hidden="true">
 							<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
 								<path

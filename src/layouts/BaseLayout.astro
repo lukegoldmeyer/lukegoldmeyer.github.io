@@ -107,7 +107,8 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 					var dlg = document.querySelector('[data-img-lightbox]');
 					var full = document.querySelector('[data-img-lightbox-img]');
 					if (!dlg || !full || !img || img.tagName !== 'IMG') return;
-					full.src = img.currentSrc || img.src;
+					/* Prefer the large `data-full` rendition; srcset may have picked a small one. */
+					full.src = img.getAttribute('data-full') || img.currentSrc || img.src;
 					full.alt = img.alt || '';
 					if (typeof dlg.showModal === 'function') dlg.showModal();
 				}
@@ -115,6 +116,20 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 				function imgLightboxClose() {
 					var dlg = document.querySelector('[data-img-lightbox]');
 					if (dlg && dlg.open && typeof dlg.close === 'function') dlg.close();
+				}
+
+				/* /media "All Work" chips: show only tiles whose data-kind matches. */
+				function mediaFilter(btn) {
+					var kind = btn.getAttribute('data-media-filter');
+					var tiles = document.querySelectorAll('[data-media-grid] [data-kind]');
+					for (var i = 0; i < tiles.length; i++) {
+						var show = kind === 'all' || tiles[i].getAttribute('data-kind') === kind;
+						tiles[i].style.display = show ? '' : 'none';
+					}
+					var btns = document.querySelectorAll('[data-media-filter]');
+					for (var j = 0; j < btns.length; j++) {
+						btns[j].setAttribute('aria-pressed', btns[j] === btn ? 'true' : 'false');
+					}
 				}
 
 				function bindImgLightboxBackdrop() {
@@ -140,6 +155,12 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 							e.preventDefault();
 							e.stopPropagation();
 							imgLightboxOpen(t);
+							return;
+						}
+						var filterBtn = t.closest('[data-media-filter]');
+						if (filterBtn) {
+							e.preventDefault();
+							mediaFilter(filterBtn);
 							return;
 						}
 						if (t.closest('[data-theme-toggle]')) {
@@ -223,7 +244,7 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 					if (els.input) els.input.value = '';
 					if (els.results)
 						els.results.innerHTML =
-							'<p class="search-hint" data-search-hint>Type to search posts and photos.</p>';
+							'<p class="search-hint" data-search-hint>Type to search projects and media.</p>';
 				}
 
 				function searchLoad() {
@@ -321,7 +342,7 @@ const pageTitle = title.includes('—') ? title : `${title} — Portfolio`;
 						.filter(Boolean);
 					if (!tokens.length) {
 						els.results.innerHTML =
-							'<p class="search-hint" data-search-hint>Type to search posts and photos.</p>';
+							'<p class="search-hint" data-search-hint>Type to search projects and media.</p>';
 						return;
 					}
 					if (!searchItems) {
