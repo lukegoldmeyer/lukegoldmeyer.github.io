@@ -84,23 +84,25 @@ By hand: copy a template from `templates/` to `src/content/<projects|media>/<slu
 - **Tags** drive the Topics section on `/projects` (`site.tagOrder` / `site.hiddenTopics`).
 - **Search palette** (⌘K / Ctrl+K) over titles, descriptions, tags, and bodies.
 
-## Hosting: Cloudflare Pages
+## Hosting: Cloudflare
 
-Free, unlimited bandwidth, global CDN. One-time setup:
+A Cloudflare Worker serving static files (`wrangler.jsonc` → `dist/`). There is no
+server code. Static file requests are free and unlimited, with a global CDN.
+One-time setup:
 
-1. Cloudflare dashboard → **Workers & Pages** → **Create** → **Pages** →
-   **Connect to Git** → pick this repo.
-2. Framework preset **Astro**; build command `npm run build`; output directory `dist`.
-3. Environment variable `NODE_VERSION` = `22`.
-4. Deploy. The site is live at `https://<project-name>.pages.dev`; every push to
-   `main` redeploys. Add a custom domain under the project's **Custom domains** tab.
-5. Then update the site URL in three places: `site` in `astro.config.mjs`,
+1. Cloudflare dashboard → **Workers & Pages** → **Create** → import this repo.
+2. Build command `npm run build`; deploy command `npx wrangler deploy`.
+   The Worker's name must match `name` in `wrangler.jsonc`.
+3. Every push to `main` redeploys. The site is live at
+   `https://lukegoldmeyer-github-io.<your-subdomain>.workers.dev`; add a custom
+   domain under the Worker's **Settings → Domains & Routes**.
+4. Then update the site URL in three places: `site` in `astro.config.mjs`,
    `site_url` / `display_url` in `public/admin/config.yml`, and the `SITE_URL`
    repo variable (see Instagram below).
-6. Once it works, delete `.github/workflows/deploy.yml` (the old GitHub Pages
+5. Once it works, delete `.github/workflows/deploy.yml` (the old GitHub Pages
    deploy) and turn off Pages in the GitHub repo settings.
 
-Limits to know: 25 MB per file, 20,000 files per deploy, 500 builds per month.
+Limits to know: 25 MB per file and 20,000 files per deploy (free plan).
 
 ## Admin (`/admin`)
 

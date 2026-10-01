@@ -1,0 +1,12 @@
+// Cloudflare Workers config: serve the static Astro build. No server code.
+// `name` must match the Worker's name in the Cloudflare dashboard.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "lukegoldmeyer-github-io",
+	"compatibility_date": "2026-06-01",
+	"assets": {
+		"directory": "./dist",
+		// Serve dist/404.html with a 404 status for unknown URLs.
+		"not_found_handling": "404-page"
+	}
+}
