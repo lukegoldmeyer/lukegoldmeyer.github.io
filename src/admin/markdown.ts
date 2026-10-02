@@ -35,7 +35,9 @@ const mathInline: TokenizerAndRendererExtension = {
 	level: 'inline',
 	start: (src) => src.indexOf('$'),
 	tokenizer(src) {
-		const m = /^\$(?!\$)((?:\\.|[^\\$\n])+?)\$(?!\d)/.exec(src);
+		/* Same rule as src/utils/remark-strict-inline-math.mjs: no space just inside
+		 * either `$`, no digit right after the closing one (so prices stay text). */
+		const m = /^\$(?![\s$])((?:\\.|[^\\$\n])*?(?:\\.|[^\s\\$]))\$(?!\d)/.exec(src);
 		if (m) return { type: 'mathInline', raw: m[0], text: m[1] };
 	},
 	renderer: (t) => tex(t.text, false),

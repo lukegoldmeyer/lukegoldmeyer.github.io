@@ -7,6 +7,7 @@ import preact from '@astrojs/preact';
 import rehypeKatex from 'rehype-katex';
 import remarkMath from 'remark-math';
 import remarkCallouts from './src/utils/remark-callouts.mjs';
+import remarkStrictInlineMath from './src/utils/remark-strict-inline-math.mjs';
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,8 +21,9 @@ export default defineConfig({
         '/photo/[...slug]': '/media/[...slug]',
     },
     markdown: {
-        // `$math$` / `$$math$$` via KaTeX, and GitHub-style `> [!NOTE]` callouts. MDX inherits these.
-        remarkPlugins: [remarkMath, remarkCallouts],
+        // `$math$` / `$$math$$` via KaTeX (prices like $250 stay text), and GitHub-style
+        // `> [!NOTE]` callouts. MDX inherits these.
+        remarkPlugins: [remarkMath, remarkStrictInlineMath, remarkCallouts],
         rehypePlugins: [rehypeKatex],
         shikiConfig: {
             /**
