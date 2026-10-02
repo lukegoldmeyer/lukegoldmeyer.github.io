@@ -1,5 +1,7 @@
 ---
 import { Image } from 'astro:assets';
+import Figure from '../../components/Figure.astro';
+import ImageRow from '../../components/ImageRow.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { getCollection, getEntry, render } from 'astro:content';
 import { site } from '../../site';
@@ -57,7 +59,7 @@ function formatDate(d: Date) {
 			</div>
 			{project.data.description ? <p class="lead">{project.data.description}</p> : null}
 			<div class="prose">
-				<Content />
+				<Content components={{ Figure, ImageRow }} />
 			</div>
 		</div>
 		{hasToc ? (

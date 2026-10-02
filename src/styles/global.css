@@ -2297,6 +2297,125 @@ b {
 .prose img {
 	border: 1px solid var(--border);
 	margin: 1.5em 0;
+	/* <Image> sets width/height attributes; keep the shape when max-width shrinks it. */
+	height: auto;
+}
+
+/* ---- <Figure> / <ImageRow> (src/components) ---- */
+
+.prose .fig {
+	margin: 1.75em auto;
+	max-width: 100%;
+}
+
+.prose .fig img {
+	width: 100%;
+	margin: 0;
+}
+
+.prose .fig figcaption {
+	margin-top: 10px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: var(--muted);
+	text-align: center;
+}
+
+.prose .fig--small {
+	width: 34%;
+}
+
+.prose .fig--medium {
+	width: 50%;
+}
+
+.prose .fig--large {
+	width: 75%;
+}
+
+.prose .fig--full {
+	width: 100%;
+}
+
+.prose .fig--left {
+	margin-left: 0;
+}
+
+.prose .fig--right {
+	margin-right: 0;
+}
+
+/* Text wraps around left/right images that leave room for it. */
+@media (min-width: 700px) {
+	.prose .fig--left:not(.fig--full),
+	.prose .fig--right:not(.fig--full) {
+		margin-top: 0.4em;
+		margin-bottom: 1em;
+	}
+
+	.prose .fig--left:not(.fig--full) {
+		float: left;
+		margin-right: 28px;
+	}
+
+	.prose .fig--right:not(.fig--full) {
+		float: right;
+		margin-left: 28px;
+	}
+
+	.prose h2,
+	.prose h3,
+	.prose hr,
+	.prose .img-row,
+	.prose .fig--full,
+	.prose .fig--center {
+		clear: both;
+	}
+}
+
+/* A floated image at the very end still sits inside the article. */
+.prose::after {
+	content: '';
+	display: block;
+	clear: both;
+}
+
+@media (max-width: 699px) {
+	.prose .fig--small {
+		width: 60%;
+	}
+
+	.prose .fig--medium,
+	.prose .fig--large {
+		width: 100%;
+	}
+}
+
+.prose .img-row {
+	display: flex;
+	gap: 12px;
+	margin: 1.75em 0;
+	align-items: flex-start;
+}
+
+/* Each image's share of the row is its aspect ratio, so all heights match. */
+.prose .img-row > .fig {
+	flex: var(--fig-ratio, 1) 1 0;
+	width: auto;
+	min-width: 0;
+	margin: 0;
+	float: none;
+}
+
+@media (max-width: 599px) {
+	.prose .img-row {
+		flex-direction: column;
+	}
+
+	.prose .img-row > .fig {
+		flex: none;
+		width: 100%;
+	}
 }
 
 .prose table {

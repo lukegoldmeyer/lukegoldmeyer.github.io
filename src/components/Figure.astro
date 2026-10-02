@@ -1,0 +1,50 @@
+---
+/**
+ * An image in a post body, with optional caption, size and position.
+ * Available in every project and media post without importing it:
+ *
+ *   import gpu from './gpu.jpg'
+ *
+ *   <Figure src={gpu} alt="The GPU" caption="ASUS Prime 5070 Ti" size="medium" align="right" />
+ *
+ * size:  small | medium | large | full (default)  — share of the text column
+ * align: center (default) | left | right          — left/right let text wrap around it
+ *
+ * Inside <ImageRow> size and align are ignored; images share the row by aspect ratio.
+ * The /admin preview mirrors this markup in src/admin/markdown.ts.
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+
+interface Props {
+	src: ImageMetadata | string;
+	alt?: string;
+	caption?: string;
+	size?: 'small' | 'medium' | 'large' | 'full';
+	align?: 'center' | 'left' | 'right';
+}
+
+const { src, alt = '', caption, size = 'full', align = 'center' } = Astro.props;
+
+/** Widest the image is ever shown at, per size (the text column is 880px). */
+const SHOWN: Record<string, number> = { small: 300, medium: 440, large: 660, full: 880 };
+const shown = SHOWN[size] ?? 880;
+/* 1x and 2x of the shown width, never larger than the original (SVGs scale on their own). */
+const widths =
+	typeof src === 'string' || src.format === 'svg'
+		? undefined
+		: [...new Set([shown, shown * 2].map((w) => Math.min(w, src.width)))];
+/* Lets <ImageRow> give each image a share of the row that keeps their heights equal. */
+const ratio = typeof src === 'string' ? undefined : +(src.width / src.height).toFixed(4);
+---
+
+<figure class:list={['fig', `fig--${size}`, `fig--${align}`]} style={ratio ? `--fig-ratio: ${ratio}` : undefined}>
+	{
+		typeof src === 'string' ? (
+			<img src={src} alt={alt} loading="lazy" decoding="async" />
+		) : (
+			<Image src={src} alt={alt} widths={widths} sizes={`(max-width: 900px) 100vw, ${shown}px`} />
+		)
+	}
+	{caption ? <figcaption>{caption}</figcaption> : null}
+</figure>

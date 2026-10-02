@@ -4,7 +4,23 @@
  */
 import { useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { IMAGE_ACCEPT } from './images';
-import { ACTIONS, type Action, type ActionContext, type TextState, actionById, indent, isListLine, matchesKeys, outdent } from './markdown-actions';
+import {
+	ACTIONS,
+	type Action,
+	type ActionContext,
+	type FigAlign,
+	type FigSize,
+	type ImageTag,
+	type TextState,
+	actionById,
+	imageTagAt,
+	imageToFigure,
+	indent,
+	isListLine,
+	matchesKeys,
+	outdent,
+	setTagAttr,
+} from './markdown-actions';
 
 interface Props {
 	value: string;
@@ -55,7 +71,7 @@ const TOOLBAR = [
 	'footnote',
 	'|',
 	'image',
-	'image-optimized',
+	'image-row',
 	'youtube',
 	'comment',
 ];
@@ -81,7 +97,10 @@ const LIST_ITEM = /^(\s*)([-*+]\s+\[[ xX]\]\s+|[-*+]\s+|(\d+)([.)])\s+)(.*)$/;
 export function MarkdownEditor(props: Props) {
 	const ref = useRef<HTMLTextAreaElement>(null);
 	const fileRef = useRef<HTMLInputElement>(null);
-	const pickRef = useRef<((f: File | undefined) => void) | null>(null);
+	const pickRef = useRef<((f: File[]) => void) | null>(null);
+	const [pickMany, setPickMany] = useState(false);
+	/** Start of the image tag the cursor is in (the settings bar edits it). */
+	const [imgAt, setImgAt] = useState<number | null>(null);
 	const [menu, setMenu] = useState<MenuId>(null);
 	const [palette, setPalette] = useState(false);
 	const [query, setQuery] = useState('');
@@ -97,7 +116,7 @@ export function MarkdownEditor(props: Props) {
 	/* Closing the file picker without choosing fires `cancel` (no `change`). */
 	useEffect(() => {
 		const input = fileRef.current;
-		const onCancel = () => pickRef.current?.(undefined);
+		const onCancel = () => pickRef.current?.([]);
 		input?.addEventListener('cancel', onCancel);
 		return () => input?.removeEventListener('cancel', onCancel);
 	}, []);
@@ -113,22 +132,45 @@ export function MarkdownEditor(props: Props) {
 	}, [menu]);
 
 	const available = useMemo(
-		() => ACTIONS.filter((a) => !a.id.startsWith('image-optimized') || props.onAddImage),
+		() => ACTIONS.filter((a) => a.id !== 'image-row' || props.onAddImage),
 		[props.onAddImage],
 	);
 
 	const ctx: ActionContext = {
 		ask: (q, initial) => window.prompt(q, initial ?? ''),
-		uploadImage: props.onAddImage
-			? () =>
-					new Promise<string | undefined>((resolve) => {
-						pickRef.current = async (file) => {
-							pickRef.current = null;
-							resolve(file ? await props.onAddImage!(file) : undefined);
-						};
-						fileRef.current!.click();
-					})
-			: undefined,
+		uploadImage: props.onAddImage ? async () => (await pickAndUpload(false))[0] : undefined,
+		uploadImages: props.onAddImage ? () => pickAndUpload(true) : undefined,
+	};
+
+	/** Open the file picker and upload what's chosen, in order. */
+	function pickAndUpload(many: boolean): Promise<string[]> {
+		setPickMany(many);
+		return new Promise((resolve) => {
+			pickRef.current = async (files) => {
+				pickRef.current = null;
+				const names: string[] = [];
+				for (const f of files) {
+					const name = await props.onAddImage!(f);
+					if (name) names.push(name);
+				}
+				resolve(names);
+			};
+			/* Let `multiple` update before the picker opens. */
+			requestAnimationFrame(() => fileRef.current!.click());
+		});
+	}
+
+	/** Track which image tag (if any) the cursor is in. */
+	function trackCursor() {
+		const ta = ref.current;
+		if (!ta) return;
+		setImgAt(imageTagAt(ta.value, ta.selectionStart)?.from ?? null);
+	}
+
+	const imgTag: ImageTag | null = imgAt === null ? null : imageTagAt(props.value, imgAt);
+	/** Edits from the settings bar; skip the textarea so its inputs keep focus. */
+	const editTag = (fn: (value: string, tag: ImageTag) => string) => {
+		if (imgTag) props.onChange(fn(props.value, imgTag));
 	};
 
 	const state = (): TextState => {
@@ -150,7 +192,10 @@ export function MarkdownEditor(props: Props) {
 		const ok = middle ? document.execCommand('insertText', false, middle) : document.execCommand('delete');
 		if (!ok || ta.value !== next.value) props.onChange(next.value);
 		ta.setSelectionRange(next.start, next.end);
-		requestAnimationFrame(() => ta.setSelectionRange(next.start, next.end));
+		requestAnimationFrame(() => {
+			ta.setSelectionRange(next.start, next.end);
+			trackCursor();
+		});
 	}
 
 	async function run(action: Action, from?: TextState) {
@@ -328,9 +373,13 @@ export function MarkdownEditor(props: Props) {
 					value={props.value}
 					onInput={(e) => props.onChange(e.currentTarget.value)}
 					onKeyDown={onKeyDown}
+					onSelect={trackCursor}
+					onClick={trackCursor}
+					onKeyUp={trackCursor}
 					placeholder="Write in Markdown… (type / on an empty line for all formatting)"
 					spellcheck
 				/>
+				{imgTag ? <ImageSettings tag={imgTag} edit={editTag} /> : null}
 				{palette ? (
 					<div class="adm-md-palette" role="dialog" aria-label="Formatting commands">
 						<input
@@ -397,12 +446,100 @@ export function MarkdownEditor(props: Props) {
 				type="file"
 				hidden
 				accept={IMAGE_ACCEPT}
+				multiple={pickMany}
 				onChange={(e) => {
-					const f = e.currentTarget.files?.[0];
+					const files = [...(e.currentTarget.files ?? [])];
 					e.currentTarget.value = '';
-					pickRef.current?.(f);
+					pickRef.current?.(files);
 				}}
 			/>
+		</div>
+	);
+}
+
+const SIZES: { value: FigSize; label: string }[] = [
+	{ value: 'small', label: 'Small' },
+	{ value: 'medium', label: 'Medium' },
+	{ value: 'large', label: 'Large' },
+	{ value: 'full', label: 'Full width' },
+];
+
+const ALIGNS: { value: FigAlign; label: string }[] = [
+	{ value: 'left', label: 'Left' },
+	{ value: 'center', label: 'Center' },
+	{ value: 'right', label: 'Right' },
+];
+
+/** Caption, size and position for the image the cursor is in. */
+function ImageSettings({ tag, edit }: { tag: ImageTag; edit: (fn: (value: string, tag: ImageTag) => string) => void }) {
+	if (tag.kind === 'Image') {
+		return (
+			<div class="adm-md-img">
+				<span class="adm-md-img-title">Image</span>
+				<span class="adm-hint">Captions, sizes and positions need the newer image block.</span>
+				<button type="button" class="adm-btn" onMouseDown={(e) => e.preventDefault()} onClick={() => edit(imageToFigure)}>
+					Convert
+				</button>
+			</div>
+		);
+	}
+	const size = (SIZES.find((o) => o.value === tag.attrs.size)?.value ?? 'full') as FigSize;
+	const align = (ALIGNS.find((o) => o.value === tag.attrs.align)?.value ?? 'center') as FigAlign;
+	const seg = <T extends string>(label: string, options: { value: T; label: string }[], value: T, attr: string, dflt: T) => (
+		<div class="adm-seg" role="radiogroup" aria-label={label}>
+			{options.map((o) => (
+				<button
+					type="button"
+					role="radio"
+					key={o.value}
+					aria-checked={value === o.value}
+					class={value === o.value ? 'is-on' : ''}
+					onMouseDown={(e) => e.preventDefault()}
+					onClick={() => edit((v, t) => setTagAttr(v, t, attr, o.value === dflt ? null : o.value))}
+				>
+					{o.label}
+				</button>
+			))}
+		</div>
+	);
+	return (
+		<div class="adm-md-img">
+			<span class="adm-md-img-title">{tag.inRow ? 'Image in row' : 'Image'}</span>
+			<label class="adm-md-img-field">
+				<span>Caption</span>
+				<input
+					class="adm-input"
+					value={tag.attrs.caption ?? ''}
+					placeholder="Shown under the image"
+					onInput={(e) => {
+						const v = e.currentTarget.value;
+						edit((val, t) => setTagAttr(val, t, 'caption', v));
+					}}
+				/>
+			</label>
+			<label class="adm-md-img-field">
+				<span>Alt text</span>
+				<input
+					class="adm-input"
+					value={tag.attrs.alt ?? ''}
+					placeholder="Describe the image for screen readers"
+					onInput={(e) => {
+						const v = e.currentTarget.value;
+						edit((val, t) => setTagAttr(val, t, 'alt', v));
+					}}
+				/>
+			</label>
+			{tag.inRow ? (
+				<span class="adm-hint">Images in a row share its width automatically.</span>
+			) : (
+				<div class="adm-md-img-segs">
+					{seg('Size', SIZES, size, 'size', 'full')}
+					{seg('Position', ALIGNS, align, 'align', 'center')}
+				</div>
+			)}
+			{!tag.inRow && align !== 'center' && size !== 'full' ? (
+				<span class="adm-hint">Text wraps beside it on wide screens.</span>
+			) : null}
 		</div>
 	);
 }

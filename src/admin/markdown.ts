@@ -41,23 +41,57 @@ const mathInline: TokenizerAndRendererExtension = {
 	renderer: (t) => tex(t.text, false),
 };
 
+const escAttr = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+/**
+ * JSX attributes → strings: `a="x"`, `a='x'`, `a={x}` (kept as the raw expression,
+ * with quotes stripped from `{"x"}`), and bare `a` (= "true").
+ */
+export function parseJsxAttrs(attrs: string): Record<string, string> {
+	const out: Record<string, string> = {};
+	for (const m of attrs.matchAll(/(\w+)(?:=(?:"([^"]*)"|'([^']*)'|\{([^}]*)\}))?/g)) {
+		const expr = m[4]?.trim();
+		out[m[1]] = m[2] ?? m[3] ?? (expr !== undefined ? expr.replace(/^(["'`])([\s\S]*)\1$/, '$2') : 'true');
+	}
+	return out;
+}
+
+const FIG_SIZES = ['small', 'medium', 'large', 'full'];
+const FIG_ALIGNS = ['center', 'left', 'right'];
+
 /**
  * Prepare MDX for a Markdown renderer: drop import/export lines and JSX comments,
- * turn `<Image src={var} … />` into `<img>` using the file each import points at.
+ * turn `<Image>`, `<Figure>` and `<ImageRow>` into the HTML the site renders
+ * (src/components/Figure.astro, ImageRow.astro) using the file each import points at.
  */
 function mdxToMarkdown(body: string, resolve: (href: string) => string): string {
 	const imports = new Map<string, string>();
 	for (const m of body.matchAll(/^import\s+(\w+)\s+from\s+['"](\.\/[^'"]+)['"];?\s*$/gm)) imports.set(m[1], m[2]);
+	/** `src={var}` → the imported file; `src="url"` → the url. */
+	const srcOf = (a: Record<string, string>, raw: string) => (/src=\{/.test(raw) ? imports.get(a.src) : a.src);
 	const cleaned = body
 		.replace(/^(?:import|export)\s.+$/gm, '')
 		.replace(/\{\/\*[\s\S]*?\*\/\}/g, '')
-		.replace(/<Image\b([\s\S]*?)\/>/g, (whole, attrs: string) => {
-			const src = attrs.match(/src=\{(\w+)\}/)?.[1];
-			const file = src ? imports.get(src) : attrs.match(/src=["']([^"']+)["']/)?.[1];
+		.replace(/<Image\b([\s\S]*?)\/>/g, (whole, raw: string) => {
+			const a = parseJsxAttrs(raw);
+			const file = srcOf(a, raw);
 			if (!file) return whole;
-			const alt = attrs.match(/alt=["']([^"']*)["']/)?.[1] ?? '';
-			return `<img src="${resolve(file)}" alt="${alt.replace(/"/g, '&quot;')}" />`;
-		});
+			/* Like astro:assets: `width` sets the displayed size (CSS still caps it at the column). */
+			const width = /^\d+$/.test(a.width ?? '') ? ` width="${a.width}"` : '';
+			return `<img src="${escAttr(resolve(file))}" alt="${escAttr(a.alt ?? '')}"${width} />`;
+		})
+		.replace(/^([ \t]*)<Figure\b([\s\S]*?)\/>/gm, (whole, indent: string, raw: string) => {
+			const a = parseJsxAttrs(raw);
+			const file = srcOf(a, raw);
+			if (!file) return whole;
+			const size = FIG_SIZES.includes(a.size) ? a.size : 'full';
+			const align = FIG_ALIGNS.includes(a.align) ? a.align : 'center';
+			const caption = a.caption ? `<figcaption>${escAttr(a.caption)}</figcaption>` : '';
+			return `${indent}<figure class="fig fig--${size} fig--${align}"><img src="${escAttr(resolve(file))}" alt="${escAttr(a.alt ?? '')}" />${caption}</figure>`;
+		})
+		/* One line, so Markdown keeps the whole row as a single HTML block. Tags start a
+		 * line (as in MDX), so `<ImageRow>` mentioned in code inside a sentence is left alone. */
+		.replace(/^<ImageRow\b[^>]*>([\s\S]*?)<\/ImageRow>/gm, (_m, inner: string) => `<div class="img-row">${inner.replace(/>\s+</g, '><').trim()}</div>`);
 	/* Footnote definitions may continue on indented lines (remark allows any indent);
 	 * un-indent them so the preview doesn't read them as code blocks. */
 	let inFootnote = false;

@@ -4,7 +4,7 @@
  * Keep the two in sync when changing either post page.
  */
 import { renderMarkdown } from './markdown';
-import { useMemo } from 'preact/hooks';
+import { useEffect, useMemo, useRef } from 'preact/hooks';
 import { rawUrl } from './config';
 import { type Asset, type MediaPost, type Post, type ProjectPost, postDir } from './content';
 
@@ -32,6 +32,24 @@ function renderBody(post: Post): string {
 	} catch (err) {
 		return `<p class="adm-error-text">Preview error: ${String((err as Error).message).replace(/</g, '&lt;')}</p>`;
 	}
+}
+
+/**
+ * Rendered body. Figures in an <ImageRow> get `--fig-ratio` from their image once it
+ * loads, as Figure.astro does at build time, so row heights line up the same way.
+ */
+function Prose({ html, class: cls }: { html: string; class: string }) {
+	const ref = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		for (const img of ref.current?.querySelectorAll<HTMLImageElement>('.img-row > .fig > img') ?? []) {
+			const set = () => {
+				if (img.naturalWidth) img.parentElement!.style.setProperty('--fig-ratio', String(img.naturalWidth / img.naturalHeight));
+			};
+			if (img.complete) set();
+			else img.addEventListener('load', set, { once: true });
+		}
+	}, [html]);
+	return <div ref={ref} class={cls} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 function Img({ asset, alt }: { asset: Asset; alt: string }) {
@@ -98,7 +116,7 @@ function MediaPreview({ post }: { post: MediaPost }) {
 					) : null}
 				</div>
 			</div>
-			{html.trim() ? <div class="prose photo-prose" dangerouslySetInnerHTML={{ __html: html }} /> : null}
+			{html.trim() ? <Prose class="prose photo-prose" html={html} /> : null}
 		</article>
 	);
 }
@@ -118,7 +136,7 @@ function ProjectPreview({ post }: { post: ProjectPost }) {
 					<h1>{post.title || 'Untitled'}</h1>
 				</div>
 				{post.description ? <p class="lead">{post.description}</p> : null}
-				<div class="prose" dangerouslySetInnerHTML={{ __html: html }} />
+				<Prose class="prose" html={html} />
 			</div>
 		</article>
 	);
@@ -148,9 +166,9 @@ export function embedUrl(link: string): string | undefined {
 
 export function Preview({ post }: { post: Post }) {
 	return (
-		<div class="admin-preview-page">
+		<div class="adm-preview-page">
 			{post.collection === 'media' ? <MediaPreview post={post} /> : <ProjectPreview post={post} />}
-			{post.hidden ? <p class="admin-preview-note">Hidden: left out of listings and search.</p> : null}
+			{post.hidden ? <p class="adm-preview-note">Hidden: left out of listings and search.</p> : null}
 		</div>
 	);
 }

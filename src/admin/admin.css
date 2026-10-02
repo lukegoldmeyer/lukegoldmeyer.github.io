@@ -1211,3 +1211,51 @@ input[type='date'].adm-input {
 	color: var(--fg);
 	font-weight: 600;
 }
+
+/* Image settings: shown under the write-up while the cursor is in a <Figure> or <Image>.
+ * Sticky so it stays on screen while scrolled through a long write-up. */
+.adm-md-img {
+	position: sticky;
+	bottom: 0;
+	z-index: 4;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 14px;
+	padding: 12px;
+	background: var(--bg);
+	border: 1px solid var(--border);
+	border-top: none;
+	box-shadow: 0 -6px 16px -12px rgba(0, 0, 0, 0.35);
+}
+
+.adm-md-img-title {
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--muted);
+	width: 100%;
+}
+
+.adm-md-img-field {
+	display: grid;
+	gap: 4px;
+	flex: 1 1 220px;
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.adm-md-img-field .adm-input {
+	padding: 7px 10px;
+	font-size: 13px;
+}
+
+.adm-md-img-segs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.adm-md-img .adm-hint {
+	font-size: 12px;
+}

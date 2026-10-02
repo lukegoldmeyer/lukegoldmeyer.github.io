@@ -6,6 +6,7 @@
  * Templates use ⟦ and ⟧ to mark what gets selected after inserting (the placeholder
  * you'll type over). If text was selected, it replaces the placeholder instead.
  */
+import { parseJsxAttrs } from './markdown';
 import { embedUrl } from './Preview';
 
 export interface TextState {
@@ -17,6 +18,8 @@ export interface TextState {
 export interface ActionContext {
 	/** Upload an image into the post folder; resolves to its file name. */
 	uploadImage?: () => Promise<string | undefined>;
+	/** Pick several images and upload them; resolves to their file names. */
+	uploadImages?: () => Promise<string[]>;
 	ask: (question: string, initial?: string) => string | null;
 }
 
@@ -224,7 +227,7 @@ function camel(name: string): string {
 	return (/^\d/.test(base) ? `img${base}` : base || 'img') + 'Img';
 }
 
-/** Add `import { Image } from 'astro:assets'` and `import x from './file'` after any existing imports. */
+/** Add import lines (e.g. `import x from './file'`) after any existing imports. */
 function addImports(value: string, lines: string[]): { value: string; added: number } {
 	const missing = lines.filter((l) => !value.includes(l));
 	if (!missing.length) return { value, added: 0 };
@@ -395,9 +398,43 @@ export const ACTIONS: Action[] = [
 	{
 		id: 'image',
 		group: 'insert',
-		label: 'Image',
+		label: 'Image (caption, size, position)',
 		short: 'Img',
-		keywords: 'picture photo upload',
+		keywords: 'picture photo upload figure caption optimized',
+		run: async (s, ctx) => {
+			if (ctx.uploadImage) {
+				const name = await ctx.uploadImage();
+				if (!name) return null;
+				const varName = camel(name);
+				const placed = insertBlock(s, `<Figure src={${varName}} alt="⟦Describe the image⟧" caption="" />`);
+				const { value, added } = addImports(placed.value, [`import ${varName} from './${name}'`]);
+				return { value, start: placed.start + added, end: placed.end + added };
+			}
+			const url = ctx.ask('Image URL:', 'https://');
+			return url === null ? null : insertBlock(s, `<Figure src="${url.trim()}" alt="⟦Describe the image⟧" caption="" />`);
+		},
+	},
+	{
+		id: 'image-row',
+		group: 'insert',
+		label: 'Images side by side',
+		short: 'Img ▯▯',
+		keywords: 'row gallery pair two three columns grid photos upload',
+		run: async (s, ctx) => {
+			if (!ctx.uploadImages) return null;
+			const names = await ctx.uploadImages();
+			if (!names.length) return null;
+			const figs = names.map((n, i) => `  <Figure src={${camel(n)}} alt="${i === 0 ? '⟦Describe the image⟧' : 'Describe the image'}" caption="" />`);
+			const placed = insertBlock(s, `<ImageRow>\n${figs.join('\n')}\n</ImageRow>`);
+			const { value, added } = addImports(placed.value, names.map((n) => `import ${camel(n)} from './${n}'`));
+			return { value, start: placed.start + added, end: placed.end + added };
+		},
+	},
+	{
+		id: 'image-markdown',
+		group: 'insert',
+		label: 'Plain Markdown image (not resized)',
+		keywords: 'picture photo upload simple',
 		run: async (s, ctx) => {
 			if (ctx.uploadImage) {
 				const name = await ctx.uploadImage();
@@ -405,22 +442,6 @@ export const ACTIONS: Action[] = [
 			}
 			const url = ctx.ask('Image URL:', 'https://');
 			return url === null ? null : insertBlock(s, `![⟦Describe the image⟧](${url.trim()})`);
-		},
-	},
-	{
-		id: 'image-optimized',
-		group: 'insert',
-		label: 'Optimized image (resized for the web)',
-		short: 'Img+',
-		keywords: 'astro image component responsive picture photo upload',
-		run: async (s, ctx) => {
-			if (!ctx.uploadImage) return null;
-			const name = await ctx.uploadImage();
-			if (!name) return null;
-			const varName = camel(name);
-			const placed = insertBlock(s, `<Image src={${varName}} alt="⟦Describe the image⟧" width={1200} />`);
-			const { value, added } = addImports(placed.value, [`import { Image } from 'astro:assets'`, `import ${varName} from './${name}'`]);
-			return { value, start: placed.start + added, end: placed.end + added };
 		},
 	},
 	{
@@ -442,6 +463,67 @@ export const ACTIONS: Action[] = [
 	},
 	{ id: 'comment', group: 'insert', label: 'Hidden comment', short: '/* */', keywords: 'note to self private todo', run: (s) => insertInline(s, '{/* ⟦note to self⟧ */}') },
 ];
+
+/* ---- image settings (the bar that appears with the cursor in an image tag) ---- */
+
+export type FigSize = 'small' | 'medium' | 'large' | 'full';
+export type FigAlign = 'center' | 'left' | 'right';
+
+export interface ImageTag {
+	kind: 'Figure' | 'Image';
+	/** [from, to) of the whole `<Figure … />` in the text. */
+	from: number;
+	to: number;
+	attrs: Record<string, string>;
+	/** Inside an <ImageRow>, where size and position don't apply. */
+	inRow: boolean;
+}
+
+/** The `<Figure … />` or `<Image … />` tag the cursor is in, if any. */
+export function imageTagAt(value: string, pos: number): ImageTag | null {
+	const m = /<(Figure|Image)\b/g;
+	let found: ImageTag | null = null;
+	for (const hit of value.matchAll(m)) {
+		const from = hit.index!;
+		if (from > pos) break;
+		const close = value.indexOf('/>', from);
+		if (close === -1) break;
+		const to = close + 2;
+		if (pos <= to) {
+			const before = value.slice(0, from);
+			found = {
+				kind: hit[1] as ImageTag['kind'],
+				from,
+				to,
+				attrs: parseJsxAttrs(value.slice(from + hit[0].length, close)),
+				inRow: before.lastIndexOf('<ImageRow') > before.lastIndexOf('</ImageRow>'),
+			};
+		}
+	}
+	return found;
+}
+
+const quoteAttr = (v: string) => (v.includes('"') ? (v.includes("'") ? `"${v.replace(/"/g, '”')}"` : `'${v}'`) : `"${v}"`);
+
+/** Set (or with `null`, remove) a string attribute on the tag at [from, to). Returns the new text. */
+export function setTagAttr(value: string, tag: ImageTag, name: string, v: string | null): string {
+	let text = value.slice(tag.from, tag.to);
+	const re = new RegExp(`\\s${name}=(?:"[^"]*"|'[^']*'|\\{[^}]*\\})`);
+	if (v === null) text = text.replace(re, '');
+	else if (re.test(text)) text = text.replace(re, ` ${name}=${quoteAttr(v)}`);
+	else text = text.replace(/\s*\/>$/, ` ${name}=${quoteAttr(v)} />`);
+	return value.slice(0, tag.from) + text + value.slice(tag.to);
+}
+
+/** `<Image src={x} alt="…" width={400} />` → `<Figure …>` with the closest size. */
+export function imageToFigure(value: string, tag: ImageTag): string {
+	const w = Number(tag.attrs.width);
+	const size: FigSize = !w || w > 760 ? 'full' : w > 550 ? 'large' : w > 370 ? 'medium' : 'small';
+	const src = /^\w+$/.test(tag.attrs.src ?? '') && value.slice(tag.from, tag.to).includes('src={') ? `{${tag.attrs.src}}` : quoteAttr(tag.attrs.src ?? '');
+	const parts = [`src=${src}`, `alt=${quoteAttr(tag.attrs.alt ?? '')}`, 'caption=""'];
+	if (size !== 'full') parts.push(`size="${size}"`);
+	return value.slice(0, tag.from) + `<Figure ${parts.join(' ')} />` + value.slice(tag.to);
+}
 
 export const actionById = (id: string) => ACTIONS.find((a) => a.id === id)!;
 

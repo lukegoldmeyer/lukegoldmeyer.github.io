@@ -184,6 +184,31 @@ Imported images give you typed width/height and you can hand them to Astro's
 	sizes="(max-width: 900px) 100vw, 880px"
 />
 
+## Images — `<Figure />` (caption, size, position)
+
+`<Figure />` is available in every post without importing it. It's optimized like
+`<Image />` and adds a caption, a `size` (small, medium, large, full) and an
+`align` (left, center, right). Left and right let the text wrap beside the image
+on wide screens:
+
+<Figure src={placeholder} alt="Placeholder, medium, on the right" caption="A medium image on the right" size="medium" align="right" />
+
+This paragraph wraps around the image on the right. On a phone the image drops
+back into the column and the text continues below it. The editor's image bar sets
+these options for you when the cursor is in the tag.
+
+<Figure src={placeholder} alt="Placeholder, small, centered" caption="A small centered image" size="small" />
+
+## Images — side by side
+
+Wrap two or more `<Figure />`s in `<ImageRow>` to place them in one row, scaled to
+the same height:
+
+<ImageRow>
+  <Figure src={placeholder} alt="Left placeholder" caption="Left" />
+  <Figure src={placeholder} alt="Right placeholder" caption="Right" />
+</ImageRow>
+
 ## Tables
 
 GFM tables with alignment control via the `:` placement in the separator row:
