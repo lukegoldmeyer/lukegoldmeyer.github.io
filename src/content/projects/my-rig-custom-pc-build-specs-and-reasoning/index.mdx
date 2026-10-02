@@ -10,6 +10,8 @@ wip: true
 
 import { Image } from 'astro:assets'
 import asusPrimeRtx5070TiWithGradientBackgroundImg from './asus-prime-rtx-5070-ti-with-gradient-background.jpg'
+import asusPrimeRtx5070TiWithGradientBackground2Img from './asus-prime-rtx-5070-ti-with-gradient-background-2.jpg'
+import imageImg from './image.jpg'
 
 ## Background
 Back in November 2025, my only computer solution was my Asus ROG Zephyrus M16 gaming laptop[^1]. It continues to be a great tool for mobile work, but at the time the keyboard was failing and I couldn't rely on it for everything, not to mention the sub-par performance when compared to a desktop. I decided to build a PC that fit my needs for reliability and for a performance upgrade, while fitting within my budget. Here's how I did it.
@@ -27,9 +29,11 @@ I was looking for an AIO cooler that performed well but also fit with the aesthe
 
 I side with Team Red for CPUs, so I picked the [Ryzen 9 9900X](https://www.amd.com/en/products/processors/desktops/ryzen/9000-series/amd-ryzen-9-9900x.html). It is a powerful 12-core, 24-thread desktop processor built for gaming and content creation. I get 4.4 GHz base clock and up to 5.6 GHz max boost, 64 MB of L3 cache and 12 MB of L2 cache (76 MB total). I also wanted to be on AM5 for some future proofing.
 
+<Image src={imageImg} alt="My Ryzen 9 9900X freshly installed in the motherboard" width={400} />
+
 I tend to waver between Team Red (AMD) and Team Green (Nvidia) for GPUs (at the time of writing this), but for my build I decided to prioritize raster and raytracing performance over VRAM capacity. I chose the [RTX 5070 Ti](https://www.microcenter.com/product/690049/asus-nvidia-geforce-rtx-5070-ti-prime-triple-fan-16gb-gddr7-pcie-50-graphics-card), specifically the ASUS Prime OC. This card has 16GB of GDDR7 VRAM, and the OC Edition features a slightly higher boost clock (up to 2,527 MHz) when compared to other 5070 Ti's. The Prime OC also fits with the build's minimalist modern aesthetic, and it only takes up 2.5 slots.
 
-<Image src={asusPrimeRtx5070TiWithGradientBackgroundImg} alt="The Asus PRIME 5070 Ti" width={1200} />
+<Image src={asusPrimeRtx5070TiWithGradientBackground2Img} alt="The Asus PRIME 5070 Ti" width={1200} />
 
 I hit the lottery when it came to memory timing, as I purchased the RAM _right before_ the AI memory price explosion of 2025. I ended up with 64GB of Corsair Vengeance RGB DDR5 at 6000mt/s which I got for around $250 the week before the price began to climb. That same kit is priced at around $1,300 at the time of writing. This capacity and speed allows me to open huge Solidworks assemblies and run projects in Blender and Unreal Engine with minimal hiccups.
 
