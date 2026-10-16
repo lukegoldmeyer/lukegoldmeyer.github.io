@@ -1,7 +1,7 @@
 /** Site copy — edit to personalize your portfolio. */
 export const site = {
 	name: 'Luke Goldmeyer',
-	role: 'I do cool stuff.',
+	role: 'Engineer · Photographer · Builder',
 	tagline:
 		'I am an engineering student, developer, photographer, musician, and cyclist. I love building things, solving problems, and capturing moments with photography.',
 	bio: `I am an engineering student, developer, photographer, musician, and cyclist. I love building things, solving problems, and capturing moments with photography.
@@ -27,7 +27,7 @@ This site serves to present my work, in both project blogs and photography showc
 
 	/** Home #work section — dvdrod-style kicker + display title */
 	workIntro: "What's New",
-	workSectionTitle: 'Recent Projects ',
+	workSectionTitle: 'Recent Projects',
 	projectsIntro: 'Projects',
 	mediaIntro: 'Media',
 
@@ -67,7 +67,7 @@ This site serves to present my work, in both project blogs and photography showc
 	experience: [
 		{ role: 'Engineering Student', org: 'Texas A&M College of Engineering', period: '2025 - 2029' },
 		{ role: 'Freelance Cinematographer', org: 'Self-Employed', period: '2024 - present' },
-		{ role: 'Sales & Service', org: 'Velo Republic Bikes', period: '2024 - present' },
+		{ role: 'Sales & Service', org: 'Velo Republic Bikes', period: '2024 - 2025' },
 		{ role: 'XC MTB Racing', org: 'NTX NICA Cross-Country MTB Team', period: '2022 - 2025' },
 		{ role: 'FPV Pilot', org: 'Professional + Hobby', period: '2022 - present' },
 		// { role: 'Role', org: 'Organization', period: '20XX - 20XX' },

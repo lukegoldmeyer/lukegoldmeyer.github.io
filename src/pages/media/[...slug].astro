@@ -113,7 +113,7 @@ function formatDate(d: Date | undefined) {
 			<div class="media-images">
 				{
 					single ? (
-						<figure class="photo-single">
+						<figure class="photo-single" id="photo-1">
 							<Image
 								src={single.img}
 								alt={single.alt}
@@ -130,7 +130,7 @@ function formatDate(d: Date | undefined) {
 					gallery.length >= 2 ? (
 						<div class="photo-masonry" role="list">
 							{gallery.map((g, i) => (
-								<figure class="photo-masonry-item" role="listitem">
+								<figure class="photo-masonry-item" role="listitem" id={`photo-${i + 1}`}>
 									<Image
 										src={g.img}
 										alt={g.alt ?? `${post.data.title} — ${i + 1}`}

@@ -6,8 +6,8 @@ import { site } from '../site';
 import { resolveProjectThumbnail } from '../utils/project-thumbnails';
 import { entryIsPublic } from '../utils/content-visibility';
 import { sortProjectsByRecency } from '../utils/sort-projects';
-import { kindLabels, resolveMediaCover } from '../utils/media-assets';
 import Pin from '../components/Pin.astro';
+import MediaCard from '../components/MediaCard.astro';
 
 const nameParts = site.name.trim().split(/\s+/);
 const firstName = nameParts[0] ?? site.name;
@@ -190,9 +190,7 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 							!hasThumb && 'pcard--no-thumb',
 						];
 
-						return wip ? (
-							<article class:list={classes}>{inner}</article>
-						) : (
+						return (
 							<a class:list={classes} href={`/projects/${project.id}/`}>
 								{inner}
 							</a>
@@ -236,7 +234,7 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 				<p class="s-label">{site.mediaIntro}</p>
 				<h2 class="s-title">
 					<span class="tl">
-						<span>Recent Media </span>
+						<span>Recent Media</span>
 					</span>
 				</h2>
 			</div>
@@ -244,53 +242,7 @@ const phoneTel = `tel:+1${site.phone.replace(/\D/g, '')}`;
 		{
 			recentMedia.length ? (
 				<div class="photo-home-grid">
-					{recentMedia.map((post) => {
-						const cover = resolveMediaCover(post);
-						const date = post.data.pubDate ? formatProjectDate(post.data.pubDate) : '';
-						const pinned = post.data.pin === true;
-						const hasCover = !!cover;
-						return (
-							<a
-								class:list={['photo-home-card', !hasCover && 'photo-home-card--no-cover']}
-								href={`/media/${post.id}/`}
-								style={`--ar: ${cover ? (cover.width / cover.height).toFixed(4) : '1.5'}`}
-							>
-								{hasCover ? (
-									<div class="photo-home-media">
-										<Image
-											src={cover}
-											alt={`${post.data.title} — cover`}
-											widths={[480, 800, 1200, 1600]}
-											sizes="(max-width: 560px) 100vw, 45vw"
-											loading="lazy"
-										/>
-										<div class="photo-home-overlay" aria-hidden="true" />
-										<div class="p-arrow" aria-hidden="true">
-											<svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-												<path
-													d="M2 12L12 2M12 2H4M12 2V10"
-													stroke="white"
-													stroke-width="1.5"
-													stroke-linecap="round"
-													stroke-linejoin="round"
-												/>
-											</svg>
-										</div>
-									</div>
-								) : null}
-								<div class="photo-home-body">
-									<h3 class="photo-home-title">
-										{post.data.title}
-										<Pin pinned={pinned} />
-									</h3>
-									<span class="photo-home-date">
-										{kindLabels[post.data.kind]}
-										{date ? ` · ${date}` : ''}
-									</span>
-								</div>
-							</a>
-						);
-					})}
+					{recentMedia.map((post) => <MediaCard post={post} />)}
 				</div>
 			) : (
 				<p class="work-empty">

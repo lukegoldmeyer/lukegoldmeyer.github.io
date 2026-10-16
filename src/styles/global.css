@@ -822,15 +822,6 @@ main {
 	border-color: var(--border-hover);
 }
 
-#work .pcard--wip {
-	pointer-events: none;
-	cursor: default;
-}
-
-#work .pcard--wip .p-arrow {
-	display: none;
-}
-
 /* Home project card without a thumbnail — collapses to text-only, full width. */
 #work .pcard--no-thumb .pcard-inner {
 	grid-template-columns: 1fr;
@@ -1287,11 +1278,13 @@ main {
 	stroke: #000;
 }
 
+/* Title and date share a line when they fit; on narrow cards the date wraps below. */
 .photo-home-body {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: baseline;
 	justify-content: space-between;
-	gap: 12px;
+	gap: 6px 12px;
 	padding: 0 4px 4px;
 	min-width: 0;
 }
@@ -1303,6 +1296,7 @@ main {
 	letter-spacing: -0.025em;
 	line-height: 1.15;
 	min-width: 0;
+	overflow-wrap: anywhere;
 }
 
 .photo-home-date {
@@ -1310,20 +1304,7 @@ main {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--muted);
-	white-space: nowrap;
-	flex-shrink: 0;
-}
-
-@media (max-width: 560px) {
-	.photo-home-body {
-		flex-direction: column;
-		align-items: flex-start;
-		row-gap: 8px;
-	}
-
-	.photo-home-date {
-		white-space: normal;
-	}
+	min-width: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2625,72 +2606,6 @@ b {
 	padding: 12px 0;
 }
 
-/* Photo index: Recent / Featured — CSS grid (rows × cols), cell width shared; tile height = photo + copy. */
-.proj-duo--photo-hub .proj-cards {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: 10px;
-	align-items: start;
-}
-
-.proj-duo--photo-hub .proj-card {
-	width: 100%;
-	min-width: 0;
-	padding: 8px;
-	gap: 8px;
-}
-
-@media (max-width: 900px) {
-	.proj-duo--photo-hub .proj-cards {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-	}
-}
-
-@media (max-width: 520px) {
-	.proj-duo--photo-hub .proj-cards {
-		grid-template-columns: minmax(0, 1fr);
-	}
-}
-
-.proj-duo--photo-hub .proj-card--photo .proj-card-media {
-	aspect-ratio: unset !important;
-	height: auto;
-	min-height: 0;
-	max-width: none;
-	margin-inline: 0;
-	overflow: visible;
-	display: block;
-	background: transparent;
-	border: none;
-	font-size: 0;
-}
-
-.proj-duo--photo-hub .proj-card--photo .proj-card-media img {
-	width: 100%;
-	height: auto;
-	display: block;
-	object-fit: unset;
-	border: 1px solid var(--border);
-	border-radius: 0;
-}
-
-.proj-duo--photo-hub .proj-card--photo:hover .proj-card-media img {
-	transform: none;
-}
-
-.proj-duo--photo-hub .proj-card-head h3 {
-	font-size: clamp(13px, 1.15vw, 16px);
-}
-
-.proj-duo--photo-hub .proj-card-date {
-	font-size: 10px;
-}
-
-.proj-duo--photo-hub .proj-card-desc {
-	font-size: 12px;
-	-webkit-line-clamp: 2;
-}
-
 .proj-cards {
 	display: flex;
 	flex-direction: column;
@@ -2747,39 +2662,6 @@ b {
 	height: 100%;
 	background: linear-gradient(145deg, #1a0a00 0%, #4a2000 55%, #cc5500 100%);
 	opacity: 0.65;
-}
-
-/* Photo-variant cards (Recent + Featured on /photo): show the image uncropped,
- * keep its natural aspect ratio, no rounded corners anywhere. */
-.proj-card--photo {
-	grid-template-columns: 1fr;
-	border-radius: 0;
-}
-
-.proj-card--photo .proj-card-media {
-	aspect-ratio: auto;
-	border-radius: 0;
-	font-size: 0;
-}
-
-.proj-card--photo .proj-card-media img {
-	width: 100%;
-	height: auto;
-	object-fit: unset;
-}
-
-.proj-card--photo .proj-card-body {
-	padding: 4px 2px 0;
-}
-
-.proj-card--photo:hover .proj-card-media img {
-	transform: none;
-}
-
-/* Prevent the topic-section 16:10 crop rule from applying to photo cards if they
- * ever appear in a similar grid layout. */
-.proj-card--photo .proj-card-media {
-	aspect-ratio: auto !important;
 }
 
 .proj-card-body {
@@ -2971,61 +2853,82 @@ b {
 	}
 }
 
-.proj-card-loc {
-	font-size: 11px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--muted);
+/* /media Recent: full-width justified rows of post cards (card styles from .photo-home-grid). */
+.media-section {
+	padding: 0 max(var(--nav-pad), env(safe-area-inset-right)) 64px max(var(--nav-pad), env(safe-area-inset-left));
 }
 
-/* "All Photos": column masonry — each image spans full column width, height from aspect ratio (no crop). */
-.photo-all-masonry {
-	column-count: 4;
-	column-gap: 6px;
+.media-post-grid {
+	--row-h: 240px;
 }
 
-@media (max-width: 1200px) {
-	.photo-all-masonry {
-		column-count: 3;
+@media (max-width: 900px) {
+	.media-post-grid {
+		--row-h: 140px;
 	}
 }
 
-@media (max-width: 800px) {
-	.photo-all-masonry {
-		column-count: 2;
+/* "All Work": every image as its own tile, in justified rows. Grow and basis are both
+ * proportional to `--ar`, so tiles in a row share one height and are never cropped. */
+.media-wall {
+	--row-h: 240px;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+@media (max-width: 900px) {
+	.media-wall {
+		--row-h: 180px;
 	}
 }
 
-@media (max-width: 480px) {
-	.photo-all-masonry {
-		column-count: 1;
+@media (max-width: 560px) {
+	.media-wall {
+		--row-h: 120px;
 	}
 }
 
-.photo-all-tile {
-	break-inside: avoid;
-	display: block;
-	margin: 0 0 6px;
-	width: 100%;
-	line-height: 0;
-	opacity: 1;
+/* Soaks up the last row's leftover width, so a short final row keeps the row height
+ * instead of stretching a lone image to full width. */
+.media-post-grid::after,
+.media-wall::after {
+	content: "";
+	flex: 1000 1 0;
+}
+
+/* Phones show one post card per row, so there is no short last row to hold back. */
+@media (max-width: 560px) {
+	.media-post-grid::after {
+		display: none;
+	}
+}
+
+.media-wall-tile {
+	position: relative;
+	flex: var(--ar, 1.5) 1 calc(var(--ar, 1.5) * var(--row-h));
+	aspect-ratio: var(--ar, 1.5);
+	min-width: 0;
+	overflow: hidden;
+	background: var(--bg2);
+	border: 1px solid var(--border);
 	transition: opacity 0.3s var(--ease);
-	background: transparent;
-	border: none;
-	box-sizing: border-box;
 }
 
-.photo-all-tile:hover {
+.media-wall-tile:hover {
 	opacity: 0.85;
 }
 
-.photo-all-tile img {
-	display: block;
+.media-wall-tile img {
 	width: 100%;
-	height: auto;
-	border: 1px solid var(--border);
-	border-radius: 0;
-	box-sizing: border-box;
+	height: 100%;
+	object-fit: cover;
+}
+
+/* Tiles on /media link to #photo-N; land below the fixed nav. */
+.photo-single,
+.photo-masonry-item {
+	scroll-margin-top: 120px;
 }
 
 .photo-article {
@@ -3152,10 +3055,6 @@ b {
 	color: var(--bg);
 	background: var(--fg);
 	border-color: var(--fg);
-}
-
-.photo-all-tile {
-	position: relative;
 }
 
 .photo-all-play {

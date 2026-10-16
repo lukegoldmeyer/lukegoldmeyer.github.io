@@ -135,6 +135,19 @@ export function resolveMediaCover(post: {
 	);
 }
 
+/**
+ * Every image a post shows, in order: its `images[]`, or just the cover when it lists
+ * none. Used by the /media "All Work" wall so each photo gets its own tile.
+ */
+export function resolveMediaGallery(post: Parameters<typeof resolveMediaCover>[0]): { img: ImageMetadata; alt?: string }[] {
+	const gallery = (post.data.images ?? [])
+		.map((entry) => resolveMediaImage(post.id, entry))
+		.filter((v): v is { img: ImageMetadata; alt?: string } => !!v);
+	if (gallery.length) return gallery;
+	const cover = resolveMediaCover(post);
+	return cover ? [{ img: cover }] : [];
+}
+
 export type ResolvedVideo =
 	| { type: 'file'; url: string; poster?: ImageMetadata; caption?: string }
 	| { type: 'embed'; url: string; caption?: string };

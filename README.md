@@ -86,8 +86,9 @@ By hand: copy a template from `templates/` to `src/content/<projects|media>/<slu
 - **Images are optimized at build time**: resized, converted to WebP, and served
   with `srcset`, so originals of any size are fine to commit. The lightbox loads a
   2560px version.
-- **Recent Media on the home page** uses justified rows: one height per row,
-  widths follow each photo's aspect ratio.
+- **Justified rows** on the home page and /media: one height per row,
+  widths follow each photo's aspect ratio. "All Work" on /media shows every image
+  from every post as its own tile, linking to that photo on the post page.
 - **Auto-generated TOC** for project posts with ≥ 2 `h2`/`h3` headings.
 - **Code blocks** get Shiki highlighting that flips with the theme, a language
   label, and a copy button.
