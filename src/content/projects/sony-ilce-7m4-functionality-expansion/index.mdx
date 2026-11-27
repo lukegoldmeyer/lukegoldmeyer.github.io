@@ -13,4 +13,12 @@ wip: true
 ---
 
 ## Background
-The A7IV records beautiful video, but I wanted to find a camera that offered some features like RAW recording and open gate. With new developments in modifying the software of cameras like the FX3, I had the thought to try and achieve something similar with the A7IV.
+The A7IV records beautiful video, but I wanted to find a camera that offered some features like RAW recording and open gate. With new developments in modifying the software of cameras like the FX3, I had the thought to try and achieve something similar with the A7IV, which officially has no raw output, only 10-bit 4:2:2 XAVC. 
+
+## Research
+I Confirmed community open-gate hacks exist for the A7IV (ArcaneLantern's kit), FX3, A7SIII, and ZV-E1, all RAM-only patches that reset on a power cycle. Raw output is a separate, harder problem than open gate. 
+
+## Processing
+I took `BODYDATA.DAT` from Sony's official updater, used [ma1co/fwtool.py](github.com/ma1co/fwtool.py) with an unmerged PR adding BIONZ XR/gen5 chip support to decrypt and unpack it into a full firmware tree. I had Claude search the unpacked firmware for raw-output-related terms and found results in `cpapp-b.bin` (the main camera control app). There are function names like `SetRawOutputFrameOffset`, flags like `b_RawOutputOn`, and a parameter-validation function `mov_raw_output_mode_req` with error logging, which are strong evidence that raw-output code exists in this firmware, not just stock cameras' firmware.
+
+Claude Code was able to successfully decompile the function with the raw output results, `FUN_0029c014`. It's gated by a software mode value (2 specific mode numbers enable it), not a hardware/sensor check, meaning this looks patchable in principle.
